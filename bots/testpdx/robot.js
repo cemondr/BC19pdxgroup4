@@ -7,7 +7,7 @@ class MyRobot extends BCAbstractRobot {
         step++;
 
         if (this.me.unit === SPECS.CRUSADER) {
-            // this.log("Crusader health: " + this.me.health);
+
             const choices = [[0,-1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
             const choice = choices[Math.floor(Math.random()*choices.length)]
             return this.move(...choice);
@@ -22,6 +22,12 @@ class MyRobot extends BCAbstractRobot {
             }
         }
 
+    }
+
+    // This function returns the squared distance between the robot object and somerobot
+    squareDistance(somerobot){
+
+        return Math.pow((somerobot.x - this.me.x),2) + Math.pow((somerobot.y- this.me.y),2);
     }
 }
 
