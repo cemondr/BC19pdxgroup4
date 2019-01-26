@@ -60,7 +60,7 @@ class MyRobot extends BCAbstractRobot {
         Otherwise it starts to move randomly until it lands on a karbonite grid*/
         else if (this.me.unit === SPECS.PILGRIM){
 
-            var karblocation = this.getClosestKarb(this.me,this.getKarboniteMap());
+            var karblocation = this.retClosestKarbLocation(this.me);
             if (karblocation){
                 
                 if (this.squareDistance(karblocation,this.me)=== 0){
@@ -84,20 +84,27 @@ class MyRobot extends BCAbstractRobot {
     }
 
 
-    getClosestKarb(robot,map){
-        const maplength = map.length;
+    /* Returns the closest karbonite location from the current robot  */
+    retClosestKarbLocation(robot){
+        let destdistance = 6000000;
         let destlocation = null;
-        let destdistance = 1000000;
-        for(let y = 0; y<maplength; y++){
-            for (let x = 0; x<maplength; x++){
-                if (map[y][x] && this.squareDistance({x,y},robot)<destdistance){
+        var map = this.karbonite_map;
+        const maplength = map.length; 
 
-                    destdistance = this.squareDistance({x,y},robot);
-                    destlocation = {x,y};
+        for(let y = 0; y<maplength; y++){   // all 2D grid array maps structured ass arr[y][x]
+            for (let x = 0; x<maplength; x++){
+                if (map[y][x]){
+                    
+                    var currentDistance = this.squareDistance({x,y},robot);
+
+                    if (currentDistance< destdistance)
+                    {
+                        destdistance = this.squareDistance({x,y},robot);
+                        destlocation = {x,y};
+                    }
                 }
             }
         }
-
         return destlocation;
     }
 
