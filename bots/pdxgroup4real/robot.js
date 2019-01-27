@@ -35,14 +35,14 @@ class MyRobot extends BCAbstractRobot {
         }
 
         else if (this.me.unit === SPECS.CASTLE) {
-            if (this.karbonite > 55) {    //for first 10 steps
+            if (this.me.turn <100 && this.karbonite > 55) {    //for first 10 steps
                 const choices = [[0,-1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
                 const choice = choices[Math.floor(Math.random()*choices.length)]
 
                 this.log("Building a crusader at " + (this.me.x+choice[0]) + ", " + (this.me.y+choice[1]));
                 return this.buildUnit(SPECS.CRUSADER, choice[0], choice[1]);
             }
-            else if (this.karbonite > 35 && this.karbonite<=55){
+            else if (this.me.turn < 100 && this.karbonite > 35 && this.karbonite<=55){
 
                 const choices = [[0,-1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
                 const choice = choices[Math.floor(Math.random()*choices.length)]
@@ -51,7 +51,7 @@ class MyRobot extends BCAbstractRobot {
                 return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
                 
             } 
-            else if (this.karbonite >= 30) {    //This code is building the unit preacher...
+            else if (this.me.turn < 100 && this.karbonite >= 50) {    //This code is building the unit preacher...
                 this.log("Building a preacher at " + (this.me.x+1) + ", " + (this.me.y+1));
                 return this.buildUnit(SPECS.PREACHER, 1, 1);
             }
@@ -65,7 +65,15 @@ class MyRobot extends BCAbstractRobot {
         else if (this.me.unit === SPECS.PILGRIM){
 
             var karblocation = this.retClosestKarbLocation(this.me);
-            if (karblocation && this.me.karbonite < 10){
+            var fuellocation = this.retClosestFuelLocation(this.me);
+
+            if (fuellocation &&this.fuel < 500 && this.me.fuel < 50){
+
+                if (this.squareDistance(fuellocation,this.me) === 0){
+                    return this.mine;
+                }
+            }
+            else if (karblocation && this.karbonite< 500 && this.me.karbonite < 10){
                 
                 if (this.squareDistance(karblocation,this.me)=== 0){
                     
@@ -78,7 +86,8 @@ class MyRobot extends BCAbstractRobot {
                 }
                 
             }
-            else if (this.me.karbonite <= 20 && this.me.karbonite >=10){ //minor fix
+            else if ((this.me.karbonite <= 20 && this.me.karbonite >=10) || 
+            (this.me.fuel<=100 && this.me.fuel >= 50)){ //minor fix
 
                 var visibleRobots = this.getVisibleRobots();
                 var i;
@@ -137,6 +146,28 @@ class MyRobot extends BCAbstractRobot {
                 }
             }
         }
+        return destlocation;
+    }
+
+    retClosestFuelLocation(robot){
+        let destdistance = 6000000;
+        let destlocation = null;
+        var map = this.fuel_map;
+        const maplength = map.length;
+
+        for (let y = 0; y <maplength; y++){
+            for (let x = 0; x < maplength; x++){
+                if(map[y][x]){
+                    var currentDistance = this.squareDistance({x,y},robot);
+
+                    if(currentDistance < destdistance){
+                        destdistance = currentDistance;
+                        destlocation = {x,y};
+                    }
+                }
+            }
+        }
+
         return destlocation;
     }
 
