@@ -60,46 +60,24 @@ class MyRobot extends BCAbstractRobot {
             }
         }
 
-        /* pilgrim currently checks whether it is at a karbonite location. If it is,it starts mining. 
-        Otherwise it starts to move randomly until it lands on a karbonite grid*/
+        /* pilgrim first checks if there is resource to dump, if so it dumps, otherwise checks if its
+        on a fuel or karb location, if so mines it, otherwise randomly moves*/
         else if (this.me.unit === SPECS.PILGRIM){
 
-            var karblocation = this.retClosestKarbLocation(this.me);
-            var fuellocation = this.retClosestFuelLocation(this.me);
-
-            if (fuellocation &&this.fuel < 500 && this.me.fuel < 50){
-
-                if (this.squareDistance(fuellocation,this.me) === 0){
-                    return this.mine;
-                }
-            }
-            else if (karblocation && this.karbonite< 500 && this.me.karbonite < 10){
-                
-                if (this.squareDistance(karblocation,this.me)=== 0){
-                    
-                    /*THE REPLAY ON BATTLECODE SITE DOESN'T DISPLAY KARONITE CORRECTLY SO
-                    THIS IS A GOOD WAY TO TEST THE PILGRIM KARBONITE LEVEL
-                    this.log("My Karbonite: " + this.me.karbonite);
-                    this.log("--------------------I AM MINING---------------------------");
-                    */
-                    return this.mine();
-                }
-                
-            }
-            else if ((this.me.karbonite <= 20 && this.me.karbonite >=10) || 
-            (this.me.fuel<=100 && this.me.fuel >= 50)){ //minor fix
+            //check if there is resource to dump
+            if ((this.me.karbonite <= 20 && this.me.karbonite >=10) ||  (this.me.fuel<=100 && this.me.fuel >= 50)){ //minor fix
 
                 var visibleRobots = this.getVisibleRobots();
                 var i;
                 var targetDump;
                 var dumpDistance;
-                
+            
                 for (i in visibleRobots){
-                
+            
                     if (this.isVisible(visibleRobots[i])){
 
                         if (visibleRobots[i].team === this.me.team && visibleRobots[i].unit === SPECS.CASTLE){
-                            
+                        
                             dumpDistance = this.squareDistance(visibleRobots[i],this.me);
 
                             if (dumpDistance <= 2){
@@ -107,16 +85,39 @@ class MyRobot extends BCAbstractRobot {
                                 targetDump = visibleRobots[i];
                                 
                                 this.log("Team Karbonite: " + this.karbonite);
-                                this.log("---------------DUMPING CARB------------")
+                                this.log("---------------DUMPING RESOURCES------------------------");
 
                                 return this.give(targetDump.x - this.me.x,targetDump.y - this.me.y,this.me.karbonite,
                                 this.me.fuel);
-                    
                             }
                         }
                     }
                 }
             }
+            //check if resource locations exist, if so mine
+            var karblocation = this.retClosestKarbLocation(this.me);
+            var fuellocation = this.retClosestFuelLocation(this.me);
+
+            if (fuellocation || karblocation){
+
+                if (this.squareDistance(fuellocation,this.me) === 0){
+
+                    if (this.fuel < 300 && this.me.fuel < 50){
+
+                        this.log("----------------- I AM MINING FUEL-----------------------");
+                        return this.mine();
+                    }
+                }
+                else if (this.squareDistance(karblocation,this.me)=== 0){
+
+                    if (this.karbonite< 500 && this.me.karbonite < 10){
+
+                        this.log("--------------------I AM MINING KARB---------------------------");                    
+                        return this.mine();
+                    }
+                }
+            }
+            
             const choices = [[0,-2], [2, -2], [2, 0], [2, 2], [0, 2], [-2, 2], [-2, 0], [-2, -2]];
             const choice = choices[Math.floor(Math.random()*choices.length)]
             return this.move(...choice);
