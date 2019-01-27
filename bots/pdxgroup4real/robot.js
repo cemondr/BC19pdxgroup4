@@ -83,19 +83,19 @@ class MyRobot extends BCAbstractRobot {
                 var dumpDistance;
                 
                 for (i in visibleRobots){
-                
+                    
                     if (this.isVisible(visibleRobots[i])){
 
                         if (visibleRobots[i].team === this.me.team && visibleRobots[i].unit === SPECS.CASTLE){
-                            
+
                             dumpDistance = this.squareDistance(visibleRobots[i],this.me);
-
-                            if (dumpDistance <= 2){
-
+                            
                                 targetDump = visibleRobots[i];
                                 
+                                /* ON REPLAY, THE TEAM KARBONITE VALUES ARE NOT RELIABLE 
                                 this.log("Team Karbonite: " + this.karbonite);
                                 this.log("---------------DUMPING CARB------------")
+                                */
 
                                 return this.give(targetDump.x - this.me.x,targetDump.y - this.me.y,this.me.karbonite,
                                 this.me.fuel);
