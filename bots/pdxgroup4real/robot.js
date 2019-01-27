@@ -61,7 +61,7 @@ class MyRobot extends BCAbstractRobot {
         else if (this.me.unit === SPECS.PILGRIM){
 
             var karblocation = this.retClosestKarbLocation(this.me);
-            if (karblocation){
+            if (karblocation && this.me.karbonite < 10){
                 
                 if (this.squareDistance(karblocation,this.me)=== 0){
                     
@@ -70,11 +70,40 @@ class MyRobot extends BCAbstractRobot {
 
                     this.log("My Karbonite: " + this.me.karbonite);
                     this.log("--------------------I AM MINING---------------------------");
-            
                     */
                     return this.mine();
                 }
                 
+            }
+            else if (this.me.karbonite <= 20 && this.me.karbonite >=10){
+
+                var visibleRobots = this.getVisibleRobots();
+                var i;
+                var targetDump;
+                var dumpDistance;
+                
+                for (i in visibleRobots){
+                
+                    if (this.isVisible(visibleRobots[i])){
+
+                        if (visibleRobots[i].team === this.me.team && visibleRobots[i].unit === SPECS.CASTLE){
+                            
+                            dumpDistance = this.squareDistance(visibleRobots[i],this.me);
+
+                            if (dumpDistance <= 2){
+
+                                targetDump = visibleRobots[i];
+                                
+                                this.log("Team Karbonite: " + this.karbonite);
+                                this.log("---------------DUMPING CARB------------")
+
+                                return this.give(targetDump.x - this.me.x,targetDump.y - this.me.y,this.me.karbonite,
+                                this.me.fuel);
+                    
+                            }
+                        }
+                    }
+                }
             }
             const choices = [[0,-2], [2, -2], [2, 0], [2, 2], [0, 2], [-2, 2], [-2, 0], [-2, -2]];
             const choice = choices[Math.floor(Math.random()*choices.length)]
@@ -99,7 +128,7 @@ class MyRobot extends BCAbstractRobot {
 
                     if (currentDistance< destdistance)
                     {
-                        destdistance = this.squareDistance({x,y},robot);
+                        destdistance = currentDistance;
                         destlocation = {x,y};
                     }
                 }
