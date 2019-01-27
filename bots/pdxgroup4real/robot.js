@@ -33,7 +33,28 @@ class MyRobot extends BCAbstractRobot {
             const choice = choices[Math.floor(Math.random()*choices.length)]
             return this.move(...choice);
         }
+        else if (this.me.unit === SPECS.PREACHER) {
+            this.log("PREACHER health: " + this.me.health);
+            var visible = this.getVisibleRobots();
+                //get attacable robot...
+            var r;
+            for(r in visible)
+            {
+                if(this.isVisible(visible[r]))
+                {
+                    var dist = this.squareDistance(visible[r]);
 
+                    if(this.me.team != visible[r].team && dist <= 16)
+                    {
+                        this.log("Attacking: " + visible[r].id);
+                        return this.attack(visible[r].x - this.me.x, visible[r].y - this.me.y);
+                    }
+                }
+            }
+            const choices = [[0,-1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
+            const choice = choices[Math.floor(Math.random()*choices.length)];
+            return this.move(...choice);
+        }
         else if (this.me.unit === SPECS.CASTLE) {
             if (this.karbonite > 55) {    //for first 10 steps
                 const choices = [[0,-1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
@@ -51,6 +72,10 @@ class MyRobot extends BCAbstractRobot {
                 return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
                 
             } 
+            else if (this.karbonite >= 30) {    //This code is building the unit preacher...
+                this.log("Building a preacher at " + (this.me.x+1) + ", " + (this.me.y+1));
+                return this.buildUnit(SPECS.PREACHER, 1, 1);
+            }
             else {
                 return // this.log("Castle health: " + this.me.health);
             }
@@ -82,8 +107,6 @@ class MyRobot extends BCAbstractRobot {
         }
 
     }
-
-
     /* Returns the closest karbonite location from the current robot  */
     retClosestKarbLocation(robot){
         let destdistance = 6000000;
