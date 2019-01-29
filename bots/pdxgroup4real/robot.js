@@ -34,6 +34,7 @@ class MyRobot extends BCAbstractRobot {
             return this.move(...choice);
         }
 
+        //CASTLE
         else if (this.me.unit === SPECS.CASTLE) {
             if (this.me.turn <100 && this.karbonite > 55) {    //for first 10 steps
                 const choices = [[0,-1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
@@ -51,7 +52,7 @@ class MyRobot extends BCAbstractRobot {
                 return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
                 
             } 
-            else if (this.me.turn < 100 && this.karbonite >= 50) {    //This code is building the unit preacher...
+            else if (this.me.turn < 100 && this.karbonite >= 35) {    //This code is building the unit preacher...
                 this.log("Building a preacher at " + (this.me.x+1) + ", " + (this.me.y+1));
                 return this.buildUnit(SPECS.PREACHER, 1, 1);
             }
@@ -60,7 +61,31 @@ class MyRobot extends BCAbstractRobot {
             }
         }
 
-        /* pilgrim first checks if there is resource to dump, if so it dumps, otherwise checks if its
+        // PREACHER
+        else if (this.me.unit === SPECS.PREACHER) {
+            this.log("PREACHER health: " + this.me.health);
+            var visible = this.getVisibleRobots();
+                //get attacable robot...
+            var r;
+            for(r in visible)
+            {
+                if(this.isVisible(visible[r]))
+                {
+                    var dist = this.squareDistance(visible[r],this.me);
+
+                    if(this.me.team != visible[r].team && dist <= 16)
+                    {
+                        this.log("Attacking: " + visible[r].id);
+                        return this.attack(visible[r].x - this.me.x, visible[r].y - this.me.y);
+                    }
+                }
+            }
+            const choices = [[0,-1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
+            const choice = choices[Math.floor(Math.random()*choices.length)];
+            return this.move(...choice);
+        }
+        
+        /* PILGRIM first checks if there is resource to dump, if so it dumps, otherwise checks if its
         on a fuel or karb location, if so mines it, otherwise randomly moves*/
         else if (this.me.unit === SPECS.PILGRIM){
 
