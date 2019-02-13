@@ -19,7 +19,7 @@ unitbuilding.incrementPilgrimCount = () =>{
 unitbuilding.buildUnitMap = (robot) =>{
 
     var unitMap = [0,0,0,0,0,0];
-    robotlist = robot.getVisibleRobots();
+    var robotlist = robot.getVisibleRobots();
 
     var i;
 

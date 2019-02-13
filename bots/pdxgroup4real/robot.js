@@ -2,6 +2,7 @@
 import {BCAbstractRobot, SPECS} from 'battlecode';
 import mining from './mining.js'
 import unitbuilding from './unitbuilding.js'
+import pilgrimNavigation from './pilgrimNavigation.js';
 
 var step = -1;
 
@@ -13,8 +14,9 @@ var PROPHET_ATK_MAX = 64;
 class MyRobot extends BCAbstractRobot {
 
     constructor(){
-        super()
+        super();
         this.unitCountMap = [0,0,0,0,0,0];
+        this.isPilgrimKarb = 1;
     }
 
     turn() {
@@ -140,11 +142,11 @@ class MyRobot extends BCAbstractRobot {
         }
         
         /* PILGRIM first checks if there is resource to dump, if so it dumps, otherwise checks if its
-        on a fuel or karb location, if so mines it, otherwise randomly moves*/
+        on a fuel or karb location, if so mines it, otherwise  moves*/
         else if (this.me.unit === SPECS.PILGRIM){
 
             //check if there is resource to dump
-            if (mining.checkIfResourcesFull(this,10,50)){ //minor fix
+            if (mining.checkIfResourcesFull(this,20,100)){ //minor fix
                 var targetDump = mining.returnTargetDump(this);
                 if(targetDump){
 
@@ -166,9 +168,12 @@ class MyRobot extends BCAbstractRobot {
                     return this.mine();
                 }
             }
+            /*
             const choices = [[0,-1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
             const choice = choices[Math.floor(Math.random()*choices.length)]
             return this.move(...choice);
+            */
+            return pilgrimNavigation.pilgrimMove(this,fuellocation,karblocation);
         }
 
     }
@@ -177,7 +182,5 @@ class MyRobot extends BCAbstractRobot {
 
         return Math.pow((destination.x - start.x),2) + Math.pow((destination.y - start.y),2);
     }
-
 }
-
 var robot = new MyRobot();

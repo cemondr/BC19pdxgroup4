@@ -72,7 +72,7 @@ mining.readyToMine = (robot,karbLoc,fueLoc) => {
 
     if (mining.squareDistance(fueLoc,robot.me) === 0){
 
-        if (robot.me.fuel < 50){
+        if (robot.me.fuel < 100){
 
             robot.log("----------------- I AM MINING FUEL-----------------------");
             return true;
@@ -80,7 +80,7 @@ mining.readyToMine = (robot,karbLoc,fueLoc) => {
     }
     else if (mining.squareDistance(karbLoc,robot.me)=== 0){
 
-        if (robot.me.karbonite < 10){
+        if (robot.me.karbonite < 20){
 
             robot.log("--------------------I AM MINING KARB---------------------------");  
             return true;
