@@ -1,73 +1,165 @@
 
 import {BCAbstractRobot, SPECS} from 'battlecode';
+import {Move} from './Move.js';
 
 var step = -1;
+
+const moveChoices = [[0,1], [1,1], [1,0], [1,-1], [0,-1], [-1,-1], [-1,0], [-1,1]];
 
 var CRUSADER_ATK_MIN = 1;
 var CRUSADER_ATK_MAX = 16;
 var PROPHET_ATK_MIN = 16;
 var PROPHET_ATK_MAX = 64;
 
+var index = 0;
+var flag = false;
+
+
 class MyRobot extends BCAbstractRobot {
+    constructor(){
+        super();
+
+        this.stack= [[0,0]];
+    }
 
     turn() {
         step++;
 
-        var MAP = this.map;
-
         if (this.me.unit === SPECS.CRUSADER) {
             var visible = this.getVisibleRobots();
+            var map = this.getPassableMap();
+            var target = 0;
 
             var i;
             for(i in visible)
             {
-                if(this.isVisible(visible[i]))
+                if(this.me.team != visible[i].team && this.isVisible(visible[i]))
                 {
-            
                    var dist = this.squareDistance(visible[i],this.me);
-
+                    
                     // if target in range, attack
-                    if(this.me.team != visible[i].team && dist <= CRUSADER_ATK_MAX && dist >= CRUSADER_ATK_MIN)
+                    if( dist <= CRUSADER_ATK_MAX && dist >= CRUSADER_ATK_MIN)
                     {
                         this.log("Attacking: " + visible[i].id);
                         return this.attack(visible[i].x - this.me.x, visible[i].y - this.me.y);
                     }
+
+                    // seen but not in att range
+                    target = visible[i];
                 }
             }
 
-            // no visible enemies or enemies not in range, move
-            const choices = [[0,-2], [2, -2], [2, 0], [2, 2], [0, 2], [-2, 2], [-2, 0], [-2, -2]];
-            const choice = choices[Math.floor(Math.random()*choices.length)]
-            return this.move(...choice);
+            // no visible enemies, move to opposite corner
+            var robotMap = this.getVisibleRobotMap();
+            //var dirChoices = [[4,4],[4,map.length-5],[map.length-5,4],[map.length-4,map.length-4]];
+            var dirChoices = [[7,7],[7,map.length-8],[map.length-8,map.length-8],[map.length-8,7]];
+            var start = [this.me.y, this.me.x];
+            var end = [];
+            
+            if(target === 0)
+                end = dirChoices[this.getIndex(dirChoices[index])];
+            else
+                end = [target.y, target.x];
+            
+            this.log(index);
+            
+            this.tmpStack = this.stack;
+            var mov = Move.moveOffense(start, end, map, robotMap, this.tmpStack);
+
+            if(this.stack.length > 10)
+                this.stack.shift();
+
+            var nl = [mov[0]+start[1],mov[1]+start[0]];
+            this.stack.push(nl);
+            this.log(this.stack);
+
+
+
+            this.log("moving: " + mov);
+            
+            return this.move(...mov);
+        }
+
+        if (this.me.unit === SPECS.PROPHET) {
+            var visible = this.getVisibleRobots();
+            var map = this.getPassableMap();
+            var target = 0;
+
+            var i;
+            for(i in visible)
+            {
+                if(this.me.team != visible[i].team && this.isVisible(visible[i]))
+                {
+                   var dist = this.squareDistance(visible[i],this.me);
+                    
+                    // if target in range, attack
+                    if( dist <= PROPHET_ATK_MAX && dist >= PROPHET_ATK_MIN)
+                    {
+                        this.log("Attacking: " + visible[i].id);
+                        return this.attack(visible[i].x - this.me.x, visible[i].y - this.me.y);
+                    }
+
+                    // seen but not in att range
+                    target = visible[i];
+                }
+            }
+
+            // no visible enemies, move to opposite corner
+            var robotMap = this.getVisibleRobotMap();
+            //var dirChoices = [[4,4],[4,map.length-5],[map.length-5,4],[map.length-4,map.length-4]];
+            var dirChoices = [[5,5],[5,map.length-6],[map.length-6,map.length-6],[map.length-6,5]];
+            var start = [this.me.y, this.me.x];
+            var end = [];
+            
+            if(target === 0)
+                end = dirChoices[this.getIndex(dirChoices[index])];
+            else
+                end = [target.y, target.x];
+            
+            this.log(index);
+            
+            this.tmpStack = this.stack;
+            var mov = Move.moveOffense(start, end, map, robotMap, this.tmpStack);
+
+            if(this.stack.length > 10)
+                this.stack.shift();
+
+            var nl = [mov[0]+start[1],mov[1]+start[0]];
+            this.stack.push(nl);
+            this.log(this.stack);
+
+
+
+            this.log("moving: " + mov);
+            
+            return this.move(...mov);
         }
 
         //CASTLE
         else if (this.me.unit === SPECS.CASTLE) {
             // build preacher and prohpet first
             // keep trying to build for the first 10 turns
-            if (this.me.turn < 10 && this.karbonite > 70) {    //This code is building the unit preacher...
-                this.log("Building a preacher at " + (this.me.x+1) + ", " + (this.me.y+1));
-                return this.buildUnit(SPECS.PREACHER, 1, 1);
-            }
-            else if(this.me.turn < 10 && this.karbonite > 60)
+            
+            if(this.karbonite > 30 && this.me.turn % 10 === 0)
             {
                 const choices = [[0,-1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
                 const choice = choices[Math.floor(Math.random()*choices.length)]
                 
                 this.log("Building a prophet at " + (this.me.x+choice[0]) + ", " + (this.me.y+choice[1]));
                 return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
-
             }
-
+            
             // keep flows of crusaders after 10 turns
-            else if (this.karbonite >= 15 && this.me.turn % 10 === 0) {    
+            /*
+            if (this.karbonite >= 15 && this.me.turn % 25 === 0) {    
                 const choices = [[0,-1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
                 const choice = choices[Math.floor(Math.random()*choices.length)]
 
                 this.log("Building a crusader at " + (this.me.x+choice[0]) + ", " + (this.me.y+choice[1]));
                 return this.buildUnit(SPECS.CRUSADER, choice[0], choice[1]);
             }
-            else if (this.karbonite >= 15 && this.me.turn < 10 ){
+            */
+            else if (this.karbonite >= 15 && this.me.turn % 25 === 0 ){
 
                 const choices = [[0,-1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
                 const choice = choices[Math.floor(Math.random()*choices.length)]
@@ -76,60 +168,13 @@ class MyRobot extends BCAbstractRobot {
                 return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
                 
             } 
+            
             else {
                 return // this.log("Castle health: " + this.me.health);
             }
         }
 
-        // PREACHER
-        else if (this.me.unit === SPECS.PREACHER) {
-            this.log("PREACHER health: " + this.me.health);
-            var visible = this.getVisibleRobots();
-                //get attacable robot...
-            var r;
-            for(r in visible)
-            {
-                if(this.isVisible(visible[r]))
-                {
-                    var dist = this.squareDistance(visible[r],this.me);
-
-                    if(this.me.team != visible[r].team && dist <= 16)
-                    {
-                        this.log("Attacking: " + visible[r].id);
-                        return this.attack(visible[r].x - this.me.x, visible[r].y - this.me.y);
-                    }
-                }
-            }
-            const choices = [[0,-1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
-            const choice = choices[Math.floor(Math.random()*choices.length)];
-            return this.move(...choice);
-        }
         
-        else if (this.me.unit === SPECS.PROPHET) {
-            var visible = this.getVisibleRobots();
-
-            var i;
-            for(i in visible)
-            {
-                if(this.isVisible(visible[i]))
-                {
-                    var dist = this.squareDistance(visible[i],this.me);
-
-                    if(this.me.team != visible[i].team && dist <= PROPHET_ATK_MAX && dist >= PROPHET_ATK_MIN)
-                    {
-                        this.log("Attacking: " + visible[i].id);
-                        return this.attack(visible[i].x - this.me.x, visible[i].y - this.me.y);
-                    }
-                }
-            }
-
-            const choices = [[0,-1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
-            const choice = choices[Math.floor(Math.random()*choices.length)]
-            return this.move(...choice);
-        }
-        
-        /* PILGRIM first checks if there is resource to dump, if so it dumps, otherwise checks if its
-        on a fuel or karb location, if so mines it, otherwise randomly moves*/
         else if (this.me.unit === SPECS.PILGRIM){
 
             //check if there is resource to dump
@@ -190,6 +235,7 @@ class MyRobot extends BCAbstractRobot {
             const choice = choices[Math.floor(Math.random()*choices.length)]
             return this.move(...choice);
         }
+        
 
     }
 
@@ -245,6 +291,19 @@ class MyRobot extends BCAbstractRobot {
         return Math.pow((destination.x - start.x),2) + Math.pow((destination.y - start.y),2);
     }
 
+    getIndex(goal)
+    {
+        var loc = [this.me.y, this.me.x];
+        var d = Move.dist(loc, goal);
+
+        if(d < 9)
+            index++;
+
+        if(index > 3)
+            index = 0;
+        
+        return index;
+    }
 }
 
 var robot = new MyRobot();
