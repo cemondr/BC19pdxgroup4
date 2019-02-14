@@ -1,6 +1,6 @@
 
 
-export class Move {
+class Move {
     
     static dist(destination, start)
     {
@@ -65,6 +65,7 @@ export class Move {
         // bug algorithm
         // const dirChoices = [[-1,0], [-1,-1], [0,-1], [1,-1], [1,0], [1,1], [0,1], [-1,1]];
         const dirChoices = [[1,0],[1,-1],[0,-1],[-1,-1],[-1,0],[-1,1],[0,1],[1,1]];
+        //const dirChoices = [[1,0],[1,1],[0,1],[-1,1],[-1,0],[-1,-1],[0,-1],[1,-1]];
 
         const begin = start;
         var current = begin;
@@ -120,6 +121,8 @@ export class Move {
         return [mov[1], mov[0]];
     }
 }
+
+export default Move
 
 
 //TODO: put directions into array to shorten up code
