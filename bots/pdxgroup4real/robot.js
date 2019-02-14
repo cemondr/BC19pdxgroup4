@@ -46,7 +46,7 @@ class MyRobot extends BCAbstractRobot {
                     target = visible[i];
                 }
             }
-        
+          
             var robotMap = this.getVisibleRobotMap();
             this.log("preacher : " + map.length)
             var dirChoices = [[9,9],[9,map.length-8],[map.length-8,map.length-9],[map.length-9,8]];
@@ -162,9 +162,9 @@ class MyRobot extends BCAbstractRobot {
             
             else {
                 return // this.log("Castle health: " + this.me.health);
+                }
             }
-        }
-    
+        
         
         else if (this.me.unit === SPECS.PILGRIM){
 
