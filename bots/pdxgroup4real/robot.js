@@ -13,15 +13,11 @@ var CRUSADER_ATK_MIN = 1;
 var CRUSADER_ATK_MAX = 16;
 var PROPHET_ATK_MIN = 16;
 var PROPHET_ATK_MAX = 64;
-<<<<<<< HEAD
-//hioo
-=======
 
 var index = 0;
 var flag = false;
 
 
->>>>>>> 2863ee614ac3fcbde2595c7c023a8e806c3e1938
 class MyRobot extends BCAbstractRobot {
     constructor(){
         super();
