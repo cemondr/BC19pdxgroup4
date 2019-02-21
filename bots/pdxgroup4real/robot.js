@@ -7,7 +7,7 @@ var CRUSADER_ATK_MIN = 1;
 var CRUSADER_ATK_MAX = 16;
 var PROPHET_ATK_MIN = 16;
 var PROPHET_ATK_MAX = 64;
-//hi
+//hioo
 class MyRobot extends BCAbstractRobot {
 
     turn() {
