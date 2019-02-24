@@ -3,12 +3,11 @@ import {Move} from './Move.js';
 import {mining} from './mining.js'
 import {unitbuilding} from './unitbuilding.js'
 import {pilgrimNavigation} from './pilgrimNavigation.js';
-import { isNull } from 'util';
 
 
 var step = -1;
 
-const moveChoices = [[0,1], [1,1], [1,0], [1,-1], [0,-1], [-1,-1], [-1,0], [-1,1]];
+//const moveChoices = [[0,1], [1,1], [1,0], [1,-1], [0,-1], [-1,-1], [-1,0], [-1,1]];
 
 var PROPHET_ATK_MIN = 16;
 var PROPHET_ATK_MAX = 64;
@@ -43,7 +42,9 @@ class MyRobot extends BCAbstractRobot {
                 if (visible[i].signal != -1)   //If robot doesn't sent any signal
                 {
                     //read out castle loc
-                    var loc = [(visible[i].signal % 2**8, Math.floor(visible[i].signal >> 8))];  // 2**8 brcause we are reading 8 bits of x and y coorinates.
+                    this.log("preacher visible robot signal: " + visible[i].signal);
+                    var loc = [(visible[i].signal % 2**8, Math.floor(visible[i].signal >> 8))];  // 2**8 because we are reading 8 bits of x and y coorinates.
+                    //var loc = (visible[i].x, visible[i].y);
                     this.log("PREACHER signal received : " + String(loc));
                 }
                 if(this.me.team != visible[i].team && this.isVisible(visible[i]))
@@ -59,14 +60,14 @@ class MyRobot extends BCAbstractRobot {
                          // need to cram two numbers < 64 into 16 bit.
                          // in the form of 00yyyyyy00xxxxxx
                             
-                            var message = visible[i].y << 8 + visible[i].x;
+                            var message = visible[i].y << 4 + visible[i].x;
                             this.log("message: " + message)
                             var maxx = Math.max(this.me.x, 63 - this.me.x);
                             
                             var maxy = Math.max(this.me.y, 63 - this.me.y);
                             this.log("preacher maxx, maxy: " + (maxx + maxy));
                             this.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!max : " +Math.pow(maxx,2) + Math.pow(maxy,2))
-                            this.signal(message, maxx + maxy);
+                            this.signal(message, Math.pow(maxx, 2) + Math.pow(maxy, 2));
                             this.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!11111!!!!!!!.........PREACHER IS signaling castle loc :" + String((visible[i].x, visible[i].y)));
                             //this.log("signal value: " + (maxx**2 + maxy**2));
                             this.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!....Sent message to castle.....!!!!!!!!!!!!!!!!!!!!!!!!!!!");
@@ -137,11 +138,11 @@ class MyRobot extends BCAbstractRobot {
                          // need to cram two numbers < 64 into 16 bit.
                          // in the form of 00yyyyyy00xxxxxx
                             
-                            var message = visible[i].y << 8 + visible[i].x;
+                            var message = visible[i].y << 4 + visible[i].x;
                             this.log("message" + message);
                             var maxx = Math.max(this.me.x, 63 - this.me.x);
                             var maxy = Math.max(this.me.y, 63 - this.me.y);
-                            this.signal(message, maxx + maxy);
+                            this.signal(message, Math.pow(maxx, 2) + Math.pow(maxy, 2));
                             this.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!11111!!!!!!!.........PROPHET is signaling castle yloc :" + String((visible[i].x, visible[i].y)));
                             //this.log("signal value: " + (maxx**2 + maxy**2));
                             this.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!....Sent message to castle.....!!!!!!!!!!!!!!!!!!!!!!!!!!!111");
@@ -241,13 +242,6 @@ class MyRobot extends BCAbstractRobot {
 
             for(i in visible)
             {
-                //this.log("castle visible robot: "  + visible[i]);
-                // if (visible[i].signal != -1)   //If robot doesn't sent any signal
-                // {
-                //     //read out castle loc
-                //     var loc = visible;  // 2**8 brcause we are reading 8 bits of x and y coorinates.
-                //     this.log("PREACHER signal received : " + String(loc));
-                // }
 
                 if ((visible[i].castleTalk !== null) && (visible[i].castleTalk > 0))
                 {
@@ -256,9 +250,10 @@ class MyRobot extends BCAbstractRobot {
                     if (visible[i].id in this.partialCastleLocReceived)
                     {
                         // must be y cord, now have full loc
-                        xloc = this.partialCastleLocReceived(visible[i].id);
-                        yloc = coord;
-                        this.log("******************************************************Inside Castle castleTalk signal received : " + String(xloc, yloc));
+                        this.log("?????????????????????????????????????????????????????????????partial castle: " + this.partialCastleLocReceived);
+                        var xloc = this.partialCastleLocReceived(visible[i].id);
+                        var yloc = coord;
+                        this.log("*************************************************Inside Castle castleTalk signal received : " + String(xloc, yloc));
                         if (this.enemyCastle.includes((xloc, yloc)) == false)
                         {
                             this.enemyCastle.push(xloc, yloc);
@@ -286,17 +281,17 @@ class MyRobot extends BCAbstractRobot {
                             if (this.pendingCastleLoc != null)
                             {
                                 
-                                this.log("***********************************************************************************88888888**********signaling castle Talk yloc :" + String(this.pendingCastleLoc));
+                                this.log("************************************************************************************signaling castle Talk yloc :" + String(this.pendingCastleLoc));
                                 this.castleTalk(this.pendingCastleLoc);
                                 this.pendingCastleLoc = null;
                             }
-                            this.log("*******************************************************signaling castle Talk xloc :" + String((visible[i].x, visible[i].y)));
+                            this.log("***********************************************************************************8*****signaling castle Talk xloc :" + String((visible[i].x, visible[i].y)));
                             this.castleTalk(visible[i].x);
                             this.pendingCastleLoc = visible[i].y
                             
                         }
-                        xloc = visible[i].castleTalk;
-                        this.log("******************************************************************************************************************************************************Castle talk Signal Received: " + String(xloc));
+                        // var xloc = i.castleTalk;
+                        // this.log("***************************************************************************************************************************Castle talk Signal Received: " + String(xloc));
                         this.log("Castle Attacking: " + visible[i].id);
                         return this.attack(visible[i].x - this.me.x, visible[i].y - this.me.y);
                     }
