@@ -3,6 +3,7 @@ import {Move} from './Move.js';
 import {mining} from './mining.js'
 import {unitbuilding} from './unitbuilding.js'
 import {pilgrimNavigation} from './pilgrimNavigation.js';
+import { isNull } from 'util';
 
 
 var step = -1;
@@ -30,7 +31,6 @@ class MyRobot extends BCAbstractRobot {
     turn() {
         step++;
         var MAP = this.map;
-        
 
         if (this.me.unit === SPECS.PREACHER) {
             var visible = this.getVisibleRobots();
@@ -40,7 +40,7 @@ class MyRobot extends BCAbstractRobot {
             var i;
             for(i in visible)
             {
-                if (i.signal != -1)
+                if (visible[i].signal != -1)   //If robot doesn't sent any signal
                 {
                     //read out castle loc
                     var loc = [(visible[i].signal % 2**8, Math.floor(visible[i].signal >> 8))];  // 2**8 brcause we are reading 8 bits of x and y coorinates.
@@ -62,8 +62,9 @@ class MyRobot extends BCAbstractRobot {
                             var message = visible[i].y << 8 + visible[i].x;
                             this.log("message: " + message)
                             var maxx = Math.max(this.me.x, 63 - this.me.x);
-                            //this.log("maxx: " + maxx)
-                            var maxy = Math.max(this.me.y, 63 - this.me.y)
+                            
+                            var maxy = Math.max(this.me.y, 63 - this.me.y);
+                            this.log("preacher maxx, maxy: " + (maxx + maxy));
                             this.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!max : " +Math.pow(maxx,2) + Math.pow(maxy,2))
                             this.signal(message, maxx + maxy);
                             this.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!11111!!!!!!!.........PREACHER IS signaling castle loc :" + String((visible[i].x, visible[i].y)));
@@ -115,11 +116,12 @@ class MyRobot extends BCAbstractRobot {
             var i;
             for(i in visible)
             {
-                if (i.signal != -1)
+                //this.log("probhet visible robot: "  + visible[i]);
+                if (visible[i].signal != -1)
                 {
                     //read out castle loc
-                    var loc = (visible[i].signal % 2**8, Math.floor(visible[i].signal >> 8));  // 2**8 brcause we are reading 8 bits of x and y coorinates.
-                    this.log("signal received : " + String(loc));
+                    var loc = [(visible[i].signal % 2**8, visible[i].signal >> 8)];  // 2**8 brcause we are reading 8 bits of x and y coorinates.
+                    this.log("Phophet signal received : " + String(loc));
                 }
 
                 if(this.me.team != visible[i].team && this.isVisible(visible[i]))
@@ -129,20 +131,18 @@ class MyRobot extends BCAbstractRobot {
                     // if target in range, attack
                     if( dist <= PROPHET_ATK_MAX && dist >= PROPHET_ATK_MIN)
                     {
-                        var cord = (visible[i].x, visible[i].y)
+                        var cord = (visible[i].x, visible[i].y);
                         if ((visible[i].unit == 0) && (enemyCastle.includes(cord) == false))
                         {
                          // need to cram two numbers < 64 into 16 bit.
                          // in the form of 00yyyyyy00xxxxxx
                             
                             var message = visible[i].y << 8 + visible[i].x;
-                            this.log("message" + message)
+                            this.log("message" + message);
                             var maxx = Math.max(this.me.x, 63 - this.me.x);
-                        
-                            var maxy = Math.max(this.me.y, 63 - this.me.y)
-                            //this.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!maxx : " +maxx)
-                            this.signal(message, Math.pow(maxx,2) + Math.pow(maxy,2));
-                            this.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!11111!!!!!!!.........PROPHET is signaling castle loc :" + String((visible[i].x, visible[i].y)));
+                            var maxy = Math.max(this.me.y, 63 - this.me.y);
+                            this.signal(message, maxx + maxy);
+                            this.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!11111!!!!!!!.........PROPHET is signaling castle yloc :" + String((visible[i].x, visible[i].y)));
                             //this.log("signal value: " + (maxx**2 + maxy**2));
                             this.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!....Sent message to castle.....!!!!!!!!!!!!!!!!!!!!!!!!!!!111");
                             
@@ -198,59 +198,6 @@ class MyRobot extends BCAbstractRobot {
             var target = 0;
 
             var i;
-            for(i in visible)
-            {
-
-                // if ((i.castleTalk != null) && (i.castleTalk > 0))
-                // {
-                //     //read out castle loc
-                //     var coord = i.castleTalk;
-                //     if (this.id in partialCastleLocReceived)
-                //     {
-                //         // must be y cord, now have full loc
-                //         xloc = partialCastleLocReceived(this.id);
-                //         yloc = coord;
-                //         this.log("******************************************************castleTalk signal received : " + String(xloc, yloc));
-                //         if (this.enemyCastle.includes((xloc, yloc)) == false)
-                //             this.enemyCastle.push(xloc, yloc);
-                //     } 
-                //     else
-                //     {
-                //     // new castle xloc, save until know yloc
-                //         partialCastleLocReceived[this.id] = coord
-
-                //     }
-                // }
-                if(this.me.team != visible[i].team && this.isVisible(visible[i]))
-                {
-                   var dist = this.squareDistance(visible[i],this.me);
-                    
-                    // if target in range, attack
-                    if( dist <= 64)
-                    {
-                        // var cord = (visible[i].x, visible[i].y)
-                        // if ((visible[i].unit == 0) && (this.enemyCastle.includes(cord) == false))
-                        // {
-                        //     this.enemyCastle.push(cord)
-                        //     if (this.pendingCastleLoc != null)
-                        //     {
-                                
-                        //         this.log("signaling castle Talk yloc :" + String(this.pendingCastleLoc));
-                        //         this.castleTalk(this.pendingCastleLoc);
-                        //         this.pendingCastleLoc = null;
-                        //     }
-                        //     this.log("*******************************************************signaling castle Talk xloc :" + String((visible[i].x, visible[i].y)));
-                        //     this.castleTalk(visible[i].x);
-                        //     this.pendingCastleLoc = visible[i].y
-                            
-                        // }
-                        this.log("Castle Attacking: " + visible[i].id);
-                        return this.attack(visible[i].x - this.me.x, visible[i].y - this.me.y);
-                    }
-
-                    target = visible[i];
-                }
-            }
 
             var unitMaps = unitbuilding.buildUnitMap(this);
 
@@ -291,69 +238,78 @@ class MyRobot extends BCAbstractRobot {
                 this.log("Building a preacher at " + (this.me.x+choice[0]) + ", " + (this.me.y+choice[1]));
                 return this.buildUnit(SPECS.PREACHER, choice[0], choice[1]);
             }
+
+            for(i in visible)
+            {
+                //this.log("castle visible robot: "  + visible[i]);
+                // if (visible[i].signal != -1)   //If robot doesn't sent any signal
+                // {
+                //     //read out castle loc
+                //     var loc = visible;  // 2**8 brcause we are reading 8 bits of x and y coorinates.
+                //     this.log("PREACHER signal received : " + String(loc));
+                // }
+
+                if ((visible[i].castleTalk !== null) && (visible[i].castleTalk > 0))
+                {
+                    //read out castle loc
+                    var coord = visible[i].castleTalk;
+                    if (visible[i].id in this.partialCastleLocReceived)
+                    {
+                        // must be y cord, now have full loc
+                        xloc = this.partialCastleLocReceived(visible[i].id);
+                        yloc = coord;
+                        this.log("******************************************************Inside Castle castleTalk signal received : " + String(xloc, yloc));
+                        if (this.enemyCastle.includes((xloc, yloc)) == false)
+                        {
+                            this.enemyCastle.push(xloc, yloc);
+                            this.log("array enemyCastle: " + this.enemyCastle);
+                        } 
+                    } 
+                    else
+                    {
+                    // new castle xloc, save until know yloc
+                        this.partialCastleLocReceived[visible[i].id] = coord
+
+                    }
+                }
+                if(this.me.team != visible[i].team && this.isVisible(visible[i]))
+                {
+                   var dist = this.squareDistance(visible[i],this.me);
+                    
+                    // if target in range, attack
+                    if( dist <= 64)
+                    {
+                        var cord = (visible[i].x, visible[i].y)
+                        if ((visible[i].unit == 0) && (this.enemyCastle.includes(cord) == false))
+                        {
+                            this.enemyCastle.push(cord)
+                            if (this.pendingCastleLoc != null)
+                            {
+                                
+                                this.log("***********************************************************************************88888888**********signaling castle Talk yloc :" + String(this.pendingCastleLoc));
+                                this.castleTalk(this.pendingCastleLoc);
+                                this.pendingCastleLoc = null;
+                            }
+                            this.log("*******************************************************signaling castle Talk xloc :" + String((visible[i].x, visible[i].y)));
+                            this.castleTalk(visible[i].x);
+                            this.pendingCastleLoc = visible[i].y
+                            
+                        }
+                        xloc = visible[i].castleTalk;
+                        this.log("******************************************************************************************************************************************************Castle talk Signal Received: " + String(xloc));
+                        this.log("Castle Attacking: " + visible[i].id);
+                        return this.attack(visible[i].x - this.me.x, visible[i].y - this.me.y);
+                    }
+
+                    target = visible[i];
+                }
             }
+
+            
+        }
         
         
         else if (this.me.unit === SPECS.PILGRIM){
-
-            //check if there is resource to dump
-        //     if ((this.me.karbonite <= 20 && this.me.karbonite >=10) ||  (this.me.fuel<=100 && this.me.fuel >= 50)){ //minor fix
-
-        //         var visibleRobots = this.getVisibleRobots();
-        //         var i;
-        //         var targetDump;
-        //         var dumpDistance;
-            
-        //         for (i in visibleRobots){
-            
-        //             if (this.isVisible(visibleRobots[i])){
-
-        //                 if (visibleRobots[i].team === this.me.team && visibleRobots[i].unit === SPECS.CASTLE){
-                        
-        //                     dumpDistance = this.squareDistance(visibleRobots[i],this.me);
-
-        //                     if (dumpDistance <= 2){
-
-        //                         targetDump = visibleRobots[i];
-                                
-        //                         this.log("Team Karbonite: " + this.karbonite);
-        //                         this.log("---------------DUMPING RESOURCES------------------------");
-
-        //                         return this.give(targetDump.x - this.me.x,targetDump.y - this.me.y,this.me.karbonite,
-        //                         this.me.fuel);
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //     }
-        //     //check if resource locations exist, if so mine
-        //     var karblocation = this.retClosestKarbLocation(this.me);
-        //     var fuellocation = this.retClosestFuelLocation(this.me);
-
-        //     if (fuellocation || karblocation){
-
-        //         if (this.squareDistance(fuellocation,this.me) === 0){
-
-        //             if (this.fuel < 300 && this.me.fuel < 50){
-
-        //                 this.log("----------------- I AM MINING FUEL-----------------------");
-        //                 return this.mine();
-        //             }
-        //         }
-        //         else if (this.squareDistance(karblocation,this.me)=== 0){
-
-        //             if (this.karbonite< 500 && this.me.karbonite < 10){
-
-        //                 this.log("--------------------I AM MINING KARB---------------------------");                    
-        //                 return this.mine();
-        //             }
-        //         }
-        //     }
-            
-        //     const choices = [[0,-1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
-        //     const choice = choices[Math.floor(Math.random()*choices.length)]
-        //     return this.move(...choice);
-        // }
         
             if (mining.checkIfResourcesFull(this,20,100)){ //minor fix
                 var targetDump = mining.returnTargetDump(this);
