@@ -190,56 +190,12 @@ class MyRobot extends BCAbstractRobot {
 
         //CASTLE
         else if (this.me.unit === SPECS.CASTLE) {
-            // build preacher and prohpet first
-            // keep trying to build for the first 10 turns
+           var unitMaps = unitbuilding.buildUnitMap(this); // DONT DELETE... (... means more lines coming)
 
-            /*
-            if(this.karbonite > 70 && this.me.turn % 10 === 0)
-            {
-                const choices = [[0,-1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
-                const choice = choices[Math.floor(Math.random()*choices.length)]
-                
-                this.log("Building a preacher at " + (this.me.x+choice[0]) + ", " + (this.me.y+choice[1]));
-                return this.buildUnit(SPECS.PREACHER, choice[0], choice[1]);
-            }
 
-            else if(this.karbonite > 30 && this.me.turn % 5 === 0)
-            {
-                const choices = [[0,-1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
-                const choice = choices[Math.floor(Math.random()*choices.length)]
-                
-                this.log("Building a prophet at " + (this.me.x+choice[0]) + ", " + (this.me.y+choice[1]));
-                return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
-            }
-            */
-            // keep flows of crusaders after 10 turns
-            /*
-            if (this.karbonite >= 15 && this.me.turn % 25 === 0) {    
-                const choices = [[0,-1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
-                const choice = choices[Math.floor(Math.random()*choices.length)]
-
-                this.log("Building a crusader at " + (this.me.x+choice[0]) + ", " + (this.me.y+choice[1]));
-                return this.buildUnit(SPECS.CRUSADER, choice[0], choice[1]);
-            }
-            */
-           /*
-            else if (this.karbonite >= 15 && this.me.turn % 25 === 0 ){
-
-                const choices = [[0,-1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
-                const choice = choices[Math.floor(Math.random()*choices.length)]
-
-                this.log("Building a pilgrim at " + (this.me.x+choice[0]) + ", " + (this.me.y+choice[1]));
-                return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
-                
-            } 
-            */
-           var unitMaps = unitbuilding.buildUnitMap(this);
-
-            //this.log("PILGRIM: "+ unitMaps[2])
-
-            if (unitMaps[2]>this.unitCountMap[2]){
-                this.unitCountMap[2]++;
-            }
+            if (unitMaps[2]>this.unitCountMap[2]){  // DON'T DELETE..
+                this.unitCountMap[2]++;  // DON'T DELETE...
+            } // DON'T DELETE...
             else if(unitMaps[3]>this.unitCountMap[3]){
                 this.unitCountMap[3]++;
             }
@@ -252,11 +208,13 @@ class MyRobot extends BCAbstractRobot {
             const choices = [[0,-1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
             const choice = choices[Math.floor(Math.random()*choices.length)]
 
-            if(this.unitCountMap[2]< 2){
+            if(this.unitCountMap[2]< 2){  // DON'T DELETE...
 
                 this.log("Building a pilgrim at " + (this.me.x+choice[0]) + ", " + (this.me.y+choice[1]));
                 return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
-            }
+            }  //... DON"T DELETE until here
+
+            
             /*
             else if(this.unitCountMap[3]< 2){
 
@@ -294,8 +252,8 @@ class MyRobot extends BCAbstractRobot {
                 }
             }
             //check if resource locations exist, if so mine
-            var karblocation = mining.findClosestResource(this.me,this.karbonite_map);
-            var fuellocation = mining.findClosestResource(this.me,this.fuel_map);
+            var karblocation = mining.findClosestResource(this,this.karbonite_map,this.map);
+            var fuellocation = mining.findClosestResource(this,this.fuel_map,this.map);
 
             if (fuellocation || karblocation){
 

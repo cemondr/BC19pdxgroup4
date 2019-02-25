@@ -42,16 +42,23 @@ pilgrimNavigation.getGoal = (robot,fueLocation,karbLocation) => {
     var goal = null;
     if (robot.me.karbonite < 20 && robot.me.fuel < 100){
         
-        if (robot.karbonite > robot.fuel){
+        if (mining.checkIfOccupied(fueLocation.x,fueLocation.y,robot) === false && 
+        mining.checkIfOccupied(karbLocation.x,karbLocation.y,robot) === false){
 
-            goal = fueLocation;
+            if (mining.squareDistance(fueLocation,robot.me) < mining.squareDistance(karbLocation,robot.me)){
+                goal = fueLocation;
+            }
+            else{
+                goal = karbLocation;
+            }
         }
-        else{
+        else if(mining.checkIfOccupied(fueLocation.x,fueLocation.y,robot)===false){
+            goal = fueLocation
+        }
+        else if (mining.checkIfOccupied(karbLocation.x,karbLocation.y,robot)=== false){
             goal = karbLocation;
         }
          
-       // robot.log("Goal.x: " + goal.x + "goal.y: " + goal.y);
-
         return goal;
     }
     else{
@@ -93,8 +100,23 @@ pilgrimNavigation.pilgrimMove = (robot,fueLocation,karbLocation) => {
 
     if (direction){
 
-        
-        robot.log("ID: "+ robot.me.id + " Moving in direction: " + direction.x + "," + direction.y);
+        var isPassableMap = robot.getPassableMap();
+        var goalx = robot.me.x + direction.x;
+        var goaly = robot.me.y + direction.y;
+
+        robot.log("ID: "+ robot.me.id +" My Location: "+ robot.me.x + ","+robot.me.y + " My Goal:  " + destination.x+
+        "," + destination.y + " Moving in direction: " + direction.x + "," + direction.y);
+
+
+        if((isPassableMap[goaly][goalx] === false) || mining.checkIfOccupied(goalx,goaly,robot)){
+
+           // robot.log(" 777777777777777777777 IDENTIFYING IMPASSABLE TERRAIN 777777777777777777777777777777777777777777777");
+
+            return pilgrimNavigation.dealWithImpassibleTerrain(robot,destination);
+
+            
+        }
+
         return robot.move(direction.x,direction.y)
         
     }
@@ -109,43 +131,59 @@ pilgrimNavigation.pilgrimMove = (robot,fueLocation,karbLocation) => {
     }
 
 }
-/*
+
 
 pilgrimNavigation.dealWithImpassibleTerrain = (robot,dest) =>{
 
-    var terrainMap = robot.map;
-    var dist = 600000;
-    var robotx = robot.me.x;
-    var roboty = robot.me.y
-    var robotxplus = (robot.me.x)+1;
+    var terrainMap = robot.getPassableMap();;
+    var dist = 600000000;
+    var robotx = robot.me.x; //0
+    var roboty = robot.me.y  //0
+    var robotxplus = (robot.me.x)+1; 
     var robotyplus = (robot.me.y)+1;
     var robotxminus = (robot.me.x)-1;
     var robotyminus = (robot.me.y)-1;
     var i;
-    var index;
+    var index = null;
 
     const choices = [[robotx,robotyminus],[robotxplus,robotyminus],[robotxplus,roboty],[robotxplus,robotyplus],
     [robotx,robotyplus],[robotxminus,robotyplus],[robotxminus,roboty],[robotxminus,robotyminus]];
 
+   robot.log(" CHOICESZZZZZ" + choices[0][0] + "," + choices[0][1])
+
     for (i = 0; i < choices.length; i++){
 
-        y = choices[i][1];
-        x = choices[i][0];
-        if (terrainMap[x][y]){
-            
+        var y = choices[i][1];
+        var x = choices[i][0];
+
+        //robot.log(" CHOICESZZZZZ " + x + "," + y + " i: " + i);
+        if ((terrainMap[y][x]) === true && (mining.checkIfOccupied(x,y,robot)) === false){
+            //obot.log(" CHOICESZZZZZ " + x + "," + y + " i: " + i);
+
+
+
             if (mining.squareDistance(dest,{x,y}) < dist){
                 dist = mining.squareDistance(dest,{x,y});
 
-                index = choices[i];
+                index = {x,y};
+
+
+              //  robot.log(" CHOICESZZZZZhalallolo" + index.x + "," + index.y);
+
+
             }
         }
     }
 
-    var choice = index;
 
-    return robot.move(choice[0]-robotx,choice[1]-roboty);
+   // robot.log("IMPASSABLE TERRAIN MOVE: " + index.x +"," + index.y);
+
+    if (index != null){
+    
+        return robot.move(index.x-robotx,index.y-roboty);
+    }
 }
-*/
+
 
 
 export default pilgrimNavigation;
