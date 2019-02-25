@@ -37,8 +37,11 @@ class MyRobot extends BCAbstractRobot {
             var target = 0;
 
             var i;
+            
             for(i in visible)
             {
+                this.log("****************************************************************************************signaling castle Talk xloc :" + (visible[i].x, visible[i].y));
+                this.castleTalk(visible[i].x);
                 if (visible[i].signal != -1)   //If robot doesn't sent any signal
                 {
                     //read out castle loc
@@ -50,7 +53,7 @@ class MyRobot extends BCAbstractRobot {
                 if(this.me.team != visible[i].team && this.isVisible(visible[i]))
                 {
                    var dist = this.squareDistance(visible[i],this.me);
-                    
+                   
                     // if target in range, attack
                     if( dist <= 16)
                     {
@@ -118,6 +121,8 @@ class MyRobot extends BCAbstractRobot {
             var i;
             for(i in visible)
             {
+                this.log("****************************************************************************************signaling castle Talk xloc :" + String((visible[i].x, visible[i].y)));
+                this.castleTalk(visible[i].x);
                 //this.log("probhet visible robot: "  + visible[i]);
                 if (visible[i].signal != -1)
                 {
@@ -219,7 +224,7 @@ class MyRobot extends BCAbstractRobot {
             const choices = [[0,-1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
             const choice = choices[Math.floor(Math.random()*choices.length)]
 
-            if(this.unitCountMap[2]< 2){
+            if(this.unitCountMap[2]< 3){
 
                 this.log("Building a pilgrim at " + (this.me.x+choice[0]) + ", " + (this.me.y+choice[1]));
                 return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
@@ -229,13 +234,13 @@ class MyRobot extends BCAbstractRobot {
             //     this.log("Building a crusader at " + (this.me.x+choice[0]) + ", " + (this.me.y+choice[1]));
             //     return this.buildUnit(SPECS.CRUSADER, choice[0], choice[1]);
             // }
-            else if (this.unitCountMap[4]< 1 ){
+            else if (this.unitCountMap[4] < 2 ){
                 
                 this.log("Building a prophet at " + (this.me.x+choice[0]) + ", " + (this.me.y+choice[1]));
                 return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
 
             }
-            else if (this.unitCountMap[5]<1){
+            else if (this.unitCountMap[5]< 2){
                 this.log("Building a preacher at " + (this.me.x+choice[0]) + ", " + (this.me.y+choice[1]));
                 return this.buildUnit(SPECS.PREACHER, choice[0], choice[1]);
             }
@@ -247,6 +252,7 @@ class MyRobot extends BCAbstractRobot {
                 {
                     //read out castle loc
                     var coord = visible[i].castleTalk;
+                    this.log("coord: " + coord);
                     if (visible[i].id in this.partialCastleLocReceived)
                     {
                         // must be y cord, now have full loc
@@ -266,6 +272,8 @@ class MyRobot extends BCAbstractRobot {
                         this.partialCastleLocReceived[visible[i].id] = coord
 
                     }
+                    var xloc = visible[i].castleTalk;
+                    this.log("--------------------------------------------------------------------------------------------------------------------------castletalk signal recieved : " + xloc);
                 }
                 if(this.me.team != visible[i].team && this.isVisible(visible[i]))
                 {
@@ -275,9 +283,9 @@ class MyRobot extends BCAbstractRobot {
                     if( dist <= 64)
                     {
                         var cord = (visible[i].x, visible[i].y)
-                        if ((visible[i].unit == 0) && (enemyCastle.includes(cord) == false))
+                        if ((visible[i].unit == 0) && (this.enemyCastle.includes(cord) == false))
                         {
-                            enemyCastle.push(cord)
+                            this.enemyCastle.push(cord)
                             if (this.pendingCastleLoc != null)
                             {
                                 
@@ -287,7 +295,7 @@ class MyRobot extends BCAbstractRobot {
                             }
                             this.log("****************************************************************************************signaling castle Talk xloc :" + String((visible[i].x, visible[i].y)));
                             this.castleTalk(visible[i].x);
-                            this.pendingCastleLoc = visible[i].y
+                            //this.pendingCastleLoc = visible[i].y
                             
                         }
                         // var xloc = i.castleTalk;
