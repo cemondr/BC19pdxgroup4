@@ -153,13 +153,12 @@ pilgrimNavigation.dealWithImpassibleTerrain = (robot,dest) =>{
 
         //robot.log(" CHOICESZZZZZ " + x + "," + y + " i: " + i);
         if ((terrainMap[y][x]) === true && (mining.checkIfOccupied(x,y,robot)) === false){
-            //obot.log(" CHOICESZZZZZ " + x + "," + y + " i: " + i);
 
+            //obot.log(" CHOICESZZZZZ " + x + "," + y + " i: " + i);
 
 
             if (mining.squareDistance(dest,{x,y}) < dist){
                 dist = mining.squareDistance(dest,{x,y});
-
                 index = {x,y};
 
 
