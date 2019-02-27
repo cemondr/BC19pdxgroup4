@@ -61,11 +61,13 @@ class MyRobot extends BCAbstractRobot {
                          // in the form of 00yy00xx
                             var message = visible[i].y << 4 + visible[i].x;
                             this.log("message: " + message)
-                            var maxx = Math.max(this.me.x, 63 - this.me.x);
+                            var maxx = Math.max(this.me.x, 10 - this.me.x);
                             
-                            var maxy = Math.max(this.me.y, 63 - this.me.y);
-                            this.signal(message, Math.pow(maxx, 2) + Math.pow(maxy, 2));
-                            this.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.........PREACHER IS signaling castle yloc :" + String((visible[i].x, visible[i].y)));
+                            var maxy = Math.max(this.me.y, 10 - this.me.y);
+                            // this.signal(message, maxx + maxy);
+                            this.log("range1: " + maxx + maxy);
+                            this.signal(message, maxx + maxy);
+                            this.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.!!!!!!!!!!!!!!!!!!!!!!!!!111........PREACHER IS signaling castle yloc :" + String((visible[i].x, visible[i].y)));
                             this.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!....Sent message to castle.....!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                             
                             enemyCastle.push(cord)
@@ -89,7 +91,7 @@ class MyRobot extends BCAbstractRobot {
             }
             // no visible enemies, move to opposite corner
             var robotMap = this.getVisibleRobotMap();
-            this.log("preacher map length : " + map.length)
+            //this.log("preacher map length : " + map.length)
             //var dirChoices = [[9,9],[9,map.length-7],[map.length-7,map.length-9],[map.length-9,7]];
             var dirChoices = [[9,9],[9,map.length-10],[map.length-10,map.length-9],[map.length-9,10]];
             var start = [this.me.y, this.me.x];
@@ -133,7 +135,7 @@ class MyRobot extends BCAbstractRobot {
                 {
                     //read out castle loc
                     var loc = [(visible[i].signal % 2**4, visible[i].signal >> 4)];  // 2**4 brcause we are reading 4 bits of x and y coorinates.
-                    this.log("Phophet signal received : " + String(loc));
+                    this.log("Prophet signal received : " + String(loc));
                 }
 
                 if(this.me.team != visible[i].team && this.isVisible(visible[i]))
@@ -144,6 +146,7 @@ class MyRobot extends BCAbstractRobot {
                     if( dist <= PROPHET_ATK_MAX && dist >= PROPHET_ATK_MIN)
                     {
                         var cord = (visible[i].x, visible[i].y);
+                        //this.log("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ enemyCastle ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" + enemyCastle);
                         if ((visible[i].unit == 0) && (enemyCastle.includes(cord) == false))
                         {
                          // need to cram two numbers < 64 into 4 bit.
@@ -151,16 +154,16 @@ class MyRobot extends BCAbstractRobot {
                             
                             var message = visible[i].y << 4 + visible[i].x;
                             this.log("message" + message);
-                            var maxx = Math.max(this.me.x, 63 - this.me.x);
-                            var maxy = Math.max(this.me.y, 63 - this.me.y);
-                            this.log("range: " + Math.pow(maxx, 2) + Math.pow(maxy, 2))
-                            this.log("range1: " + maxx + maxy);
-                            this.signal(message, Math.pow(maxx, 2) + Math.pow(maxy, 2));
+                            var maxx = Math.max(this.me.x, 20 - this.me.x);
+                            var maxy = Math.max(this.me.y, 20 - this.me.y);
+                            this.log("range: " + maxx + maxy);
+                            //this.log("range1: " + (63 - this.me.x) + (63 - this.me.y));
+                            this.signal(message, maxx);
 
-                            this.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.........PROPHET is signaling castle yloc :" + String((visible[i].x, visible[i].y)));
+                            this.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!11!!!.........PROPHET is signaling castle yloc :" + String((visible[i].x, visible[i].y)));
                             this.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!...Sent message to castle.....!!!!!!!!!!!!!!!!!!!!!!!!!!!111");
 
-                            this.castleTalk(visible[i].y);
+                            //this.castleTalk(visible[i].y);
                         
                             enemyCastle.push(cord)
                             if (this.pendingCastleLoc != null)
@@ -269,24 +272,25 @@ class MyRobot extends BCAbstractRobot {
             if (unitMaps[2]>this.unitCountMap[2]){  // DON'T DELETE..
                 this.unitCountMap[2]++;  // DON'T DELETE...
             } // DON'T DELETE...
-            else if(unitMaps[3]>this.unitCountMap[3]){
-                this.unitCountMap[3]++;
-            }
+            // else if(unitMaps[3]>this.unitCountMap[3]){
+            //     this.unitCountMap[3]++;
+            // }
             else if(unitMaps[4]> this.unitCountMap[4]){
                 this.unitCountMap[4]++;
             }
             else if(unitMaps[5]> this.unitCountMap[5]){
                 this.unitCountMap[5]++;
             }
+            
             const choices = [[0,-1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
             const choice = choices[Math.floor(Math.random()*choices.length)]
 
-            if(this.unitCountMap[2]< 2){  // DON'T DELETE...
+            if(this.unitCountMap[2]< 4){  // DON'T DELETE...
 
                 this.log("Building a pilgrim at " + (this.me.x+choice[0]) + ", " + (this.me.y+choice[1]));
                 return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
             }  //... DON"T DELETE until here
-
+             //
             
             /*
             else if(this.unitCountMap[3]< 2){
@@ -295,17 +299,13 @@ class MyRobot extends BCAbstractRobot {
                 return this.buildUnit(SPECS.CRUSADER, choice[0], choice[1]);
             }
             */
-            else if (this.unitCountMap[5]<1){
-                this.log("Building a preacher at " + (this.me.x+choice[0]) + ", " + (this.me.y+choice[1]));
-                return this.buildUnit(SPECS.PREACHER, choice[0], choice[1]);
-            }
-            else if (this.unitCountMap[4]< 1 ){
+            else if (this.unitCountMap[4]< 3 ){
                 
                 this.log("Building a prophet at " + (this.me.x+choice[0]) + ", " + (this.me.y+choice[1]));
                 return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
 
             }
-            else if (this.unitCountMap[5]< 1){
+            else if (this.unitCountMap[5]< 3){
                 this.log("Building a preacher at " + (this.me.x+choice[0]) + ", " + (this.me.y+choice[1]));
                 return this.buildUnit(SPECS.PREACHER, choice[0], choice[1]);
             }
