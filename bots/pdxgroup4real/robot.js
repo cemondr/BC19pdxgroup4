@@ -24,6 +24,7 @@ class MyRobot extends BCAbstractRobot {
         this.unitCountMap = [0,0,0,0,0,0];  
         this.isPilgrimKarb = 1;             
         this.partialCastleLocReceived = {}
+        this.pilgrimStack = [{}];
 
     }
 
@@ -133,7 +134,7 @@ class MyRobot extends BCAbstractRobot {
                 {
                     //read out castle loc
                     var loc = [(visible[i].signal % 2**4, visible[i].signal >> 4)];  // 2**4 brcause we are reading 4 bits of x and y coorinates.
-                    this.log("Phophet signal received : " + String(loc));
+                    //this.log("Phophet signal received : " + String(loc));
                 }
 
                 if(this.me.team != visible[i].team && this.isVisible(visible[i]))
@@ -154,8 +155,8 @@ class MyRobot extends BCAbstractRobot {
                             var maxx = Math.max(this.me.x, 63 - this.me.x);
                             var maxy = Math.max(this.me.y, 63 - this.me.y);
                             this.signal(message, Math.pow(maxx, 2) + Math.pow(maxy, 2));
-                            this.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.........PROPHET is signaling castle yloc :" + String((visible[i].x, visible[i].y)));
-                            this.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!...Sent message to castle.....!!!!!!!!!!!!!!!!!!!!!!!!!!!111");
+                            //this.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.........PROPHET is signaling castle yloc :" + String((visible[i].x, visible[i].y)));
+                           // this.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!...Sent message to castle.....!!!!!!!!!!!!!!!!!!!!!!!!!!!111");
 
                             this.castleTalk(visible[i].x);
                         
@@ -163,7 +164,7 @@ class MyRobot extends BCAbstractRobot {
                             if (this.pendingCastleLoc != null)
                             {
                                 
-                                this.log("************************************************************signaling castle Talk yloc :" + String(this.pendingCastleLoc));
+                               // this.log("************************************************************signaling castle Talk yloc :" + String(this.pendingCastleLoc));
                                 this.castleTalk(this.pendingCastleLoc);
                                 //this.log("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$CASTLE TALK VALUE......." + this.pendingCastleLoc);
                                 this.pendingCastleLoc = null;
@@ -171,7 +172,7 @@ class MyRobot extends BCAbstractRobot {
                             else
                             {
 
-                                this.log("*****************************************************signaling castle Talk xloc :" + String((visible[i].x, visible[i].y)));
+                                //this.log("*****************************************************signaling castle Talk xloc :" + String((visible[i].x, visible[i].y)));
                                 this.castleTalk(visible[i].x);
                                 this.pendingCastleLoc = visible[i].y
                             }
@@ -218,8 +219,11 @@ class MyRobot extends BCAbstractRobot {
             var map = this.getPassableMap();
             var target = 0;
 
-            var i;
+            var resourceCount = mining.countResources(this,this.fuel_map,this.karbonite_map);
 
+            var i;
+            
+             //USE THIS TO KEEP TRACK OF HOW MANY EACH CASTLE HAS CREATED 
 
             if (unitMaps[2]>this.unitCountMap[2]){  // DON'T DELETE..
                 this.unitCountMap[2]++;  // DON'T DELETE...
@@ -233,10 +237,12 @@ class MyRobot extends BCAbstractRobot {
             else if(unitMaps[5]> this.unitCountMap[5]){
                 this.unitCountMap[5]++;
             }
+            
+            
             const choices = [[0,-1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
             const choice = choices[Math.floor(Math.random()*choices.length)]
 
-            if(this.unitCountMap[2]< 2){  // DON'T DELETE...
+            if(unitMaps[2]< resourceCount){   // PILGRIM SHOULD KEEP BUILDING BASED ON CASTLE VISION  INCASE OTHER PILGRIMS DIE!
 
                 this.log("Building a pilgrim at " + (this.me.x+choice[0]) + ", " + (this.me.y+choice[1]));
                 return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
@@ -250,20 +256,22 @@ class MyRobot extends BCAbstractRobot {
                 return this.buildUnit(SPECS.CRUSADER, choice[0], choice[1]);
             }
             */
-            else if (this.unitCountMap[5]<1){
+            else if (unitMaps[5]<1){   // CHECKS CASTLE'S VISION ONLY. 
                 this.log("Building a preacher at " + (this.me.x+choice[0]) + ", " + (this.me.y+choice[1]));
                 return this.buildUnit(SPECS.PREACHER, choice[0], choice[1]);
             }
-            else if (this.unitCountMap[4]< 1 ){
+            else if (unitMaps[4]< 1 ){ // CHECKS CASTLE'S VISION ONLY. 
                 
                 this.log("Building a prophet at " + (this.me.x+choice[0]) + ", " + (this.me.y+choice[1]));
                 return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
 
             }
+            /*
             else if (this.unitCountMap[5]< 1){
                 this.log("Building a preacher at " + (this.me.x+choice[0]) + ", " + (this.me.y+choice[1]));
                 return this.buildUnit(SPECS.PREACHER, choice[0], choice[1]);
             }
+            */
 
             for(i in visible)
             {
@@ -280,7 +288,7 @@ class MyRobot extends BCAbstractRobot {
 
                         var xloc = this.partialCastleLocReceived[visible[i].id];
                         var yloc = coord;
-                        this.log("**********************************************Inside-Castle: castleTalk signal received : " + String(xloc, yloc));
+                       // this.log("**********************************************Inside-Castle: castleTalk signal received : " + String(xloc, yloc));
                         if (enemyCastle.includes((xloc, yloc)) == false)
                         {
                             enemyCastle.push(xloc, yloc);  
@@ -310,7 +318,7 @@ class MyRobot extends BCAbstractRobot {
         else if (this.me.unit === SPECS.PILGRIM){
 
             this.castleTalk(this.me.x)
-            this.log("pilgrim castle talk value: " + this.me.x);
+            //this.log("pilgrim castle talk value: " + this.me.x);
             //check if there is resource to dump
             if (mining.checkIfResourcesFull(this,20,100)){ //minor fix
                 var targetDump = mining.returnTargetDump(this);
