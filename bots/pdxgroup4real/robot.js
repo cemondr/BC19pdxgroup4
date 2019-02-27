@@ -90,8 +90,8 @@ class MyRobot extends BCAbstractRobot {
             // no visible enemies, move to opposite corner
             var robotMap = this.getVisibleRobotMap();
             this.log("preacher map length : " + map.length)
-            //var dirChoices = [[9,9],[9,map.length-8],[map.length-8,map.length-9],[map.length-9,8]];
-            var dirChoices = [[10,10],[10,map.length-9],[map.length-9,map.length-10],[map.length-10,9]];
+            //var dirChoices = [[9,9],[9,map.length-7],[map.length-7,map.length-9],[map.length-9,7]];
+            var dirChoices = [[9,9],[9,map.length-10],[map.length-10,map.length-9],[map.length-9,10]];
             var start = [this.me.y, this.me.x];
             var end = [];
             
@@ -153,11 +153,14 @@ class MyRobot extends BCAbstractRobot {
                             this.log("message" + message);
                             var maxx = Math.max(this.me.x, 63 - this.me.x);
                             var maxy = Math.max(this.me.y, 63 - this.me.y);
+                            this.log("range: " + Math.pow(maxx, 2) + Math.pow(maxy, 2))
+                            this.log("range1: " + maxx + maxy);
                             this.signal(message, Math.pow(maxx, 2) + Math.pow(maxy, 2));
+
                             this.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.........PROPHET is signaling castle yloc :" + String((visible[i].x, visible[i].y)));
                             this.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!...Sent message to castle.....!!!!!!!!!!!!!!!!!!!!!!!!!!!111");
 
-                            this.castleTalk(visible[i].x);
+                            this.castleTalk(visible[i].y);
                         
                             enemyCastle.push(cord)
                             if (this.pendingCastleLoc != null)
@@ -220,6 +223,48 @@ class MyRobot extends BCAbstractRobot {
 
             var i;
 
+             for(i in visible)
+            {
+                //this.castleTalk(visible[i].x);
+                //this.log("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$CASTLE TALK VALUE......." + visible[i].x);
+                if ((visible[i].castle_talk !== null) && (visible[i].castle_talk > 0))
+                {
+                    //read out castle loc
+                    var coord = visible[i].castle_talk;
+                    var dict_str = '';
+                    if (visible[i].id in this.partialCastleLocReceived)
+                    {
+                        // must be y cord, now have full loc
+
+                        var xloc = this.partialCastleLocReceived[visible[i].id];
+                        var yloc = coord;
+                        this.log("**********************************************Inside-Castle: castleTalk signal received : " + String(xloc, yloc));
+                        this.castleTalk(xloc);
+                        
+                        if (enemyCastle.includes((xloc, yloc)) == false)
+                        {
+                            enemyCastle.push(xloc, yloc);  
+                        } 
+                    } 
+                    else
+                    {
+                        this.partialCastleLocReceived[visible[i].id] = coord;         //new castle xloc, save until know yloc  
+                    }
+                }
+                
+                if(this.me.team != visible[i].team && this.isVisible(visible[i]))
+                {
+                   var dist = this.squareDistance(visible[i],this.me);
+                    
+                    // if target in range, attack
+                    if( dist <= 64)
+                    {
+                        this.log("Castle Attacking: " + visible[i].id);
+                        return this.attack(visible[i].x - this.me.x, visible[i].y - this.me.y);
+                    }
+                    target = visible[i];
+                }
+            } 
 
             if (unitMaps[2]>this.unitCountMap[2]){  // DON'T DELETE..
                 this.unitCountMap[2]++;  // DON'T DELETE...
@@ -265,46 +310,7 @@ class MyRobot extends BCAbstractRobot {
                 return this.buildUnit(SPECS.PREACHER, choice[0], choice[1]);
             }
 
-            for(i in visible)
-            {
-                this.castleTalk(visible[i].x);
-                //this.log("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$CASTLE TALK VALUE......." + visible[i].x);
-                if ((visible[i].castle_talk !== null) && (visible[i].castle_talk > 0))
-                {
-                    //read out castle loc
-                    var coord = visible[i].castle_talk;
-                    var dict_str = '';
-                    if (visible[i].id in this.partialCastleLocReceived)
-                    {
-                        // must be y cord, now have full loc
-
-                        var xloc = this.partialCastleLocReceived[visible[i].id];
-                        var yloc = coord;
-                        this.log("**********************************************Inside-Castle: castleTalk signal received : " + String(xloc, yloc));
-                        if (enemyCastle.includes((xloc, yloc)) == false)
-                        {
-                            enemyCastle.push(xloc, yloc);  
-                        } 
-                    } 
-                    else
-                    {
-                        this.partialCastleLocReceived[visible[i].id] = coord;         //new castle xloc, save until know yloc  
-                    }
-                }
-                
-                if(this.me.team != visible[i].team && this.isVisible(visible[i]))
-                {
-                   var dist = this.squareDistance(visible[i],this.me);
-                    
-                    // if target in range, attack
-                    if( dist <= 64)
-                    {
-                        this.log("Castle Attacking: " + visible[i].id);
-                        return this.attack(visible[i].x - this.me.x, visible[i].y - this.me.y);
-                    }
-                    target = visible[i];
-                }
-            }  
+            
         }
         
         else if (this.me.unit === SPECS.PILGRIM){
