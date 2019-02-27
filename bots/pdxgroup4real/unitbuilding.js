@@ -73,4 +73,6 @@ unitbuilding.countthepilgrims = (robot) =>{
     }
 
     return pilgrimnum;
+
 }
+

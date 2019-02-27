@@ -6,7 +6,6 @@ import {mining} from './mining.js'
 import {unitbuilding} from './unitbuilding.js'
 import {pilgrimNavigation} from './pilgrimNavigation.js';
 
-
 var step = -1;
 var PROPHET_ATK_MIN = 16;
 var PROPHET_ATK_MAX = 64;
@@ -25,6 +24,7 @@ class MyRobot extends BCAbstractRobot {
         this.unitCountMap = [0,0,0,0,0,0];  
         this.isPilgrimKarb = 1;             
         this.partialCastleLocReceived = {}
+
     }
 
     turn() {
@@ -52,6 +52,7 @@ class MyRobot extends BCAbstractRobot {
                    
                     // if target in range, attack
                     if( dist <= 16)
+
                     {
                         var cord = (visible[i].x, visible[i].y)
                         if ((visible[i].unit == 0) && (enemyCastle.includes(cord) == false))
@@ -82,7 +83,7 @@ class MyRobot extends BCAbstractRobot {
                         this.log("Attacking: " + visible[i].id);
                         return this.attack(visible[i].x - this.me.x, visible[i].y - this.me.y);
                     }
-
+                    // seen but not in att range
                     target = visible[i];
                 }
             }
@@ -103,20 +104,23 @@ class MyRobot extends BCAbstractRobot {
             
             this.tmpStack = this.stack;
             var mov = Move.moveOffense(start, end, map, robotMap, this.tmpStack);
-
             if(this.stack.length > 10)
                 this.stack.shift();
 
             var nl = [mov[0]+start[1],mov[1]+start[0]];
             this.stack.push(nl);
             this.log(this.stack);
-            this.log("moving toword: " + mov);
+
+
+
+            this.log("moving: " + mov);
             
             return this.move(...mov);
+
         }
 
-
         else if (this.me.unit === SPECS.PROPHET) {
+
             var visible = this.getVisibleRobots();
             var map = this.getPassableMap();
             var target = 0;
@@ -161,9 +165,11 @@ class MyRobot extends BCAbstractRobot {
                                 
                                 this.log("************************************************************signaling castle Talk yloc :" + String(this.pendingCastleLoc));
                                 this.castleTalk(this.pendingCastleLoc);
+                                //this.log("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$CASTLE TALK VALUE......." + this.pendingCastleLoc);
                                 this.pendingCastleLoc = null;
                             }
-                            else{
+                            else
+                            {
 
                                 this.log("*****************************************************signaling castle Talk xloc :" + String((visible[i].x, visible[i].y)));
                                 this.castleTalk(visible[i].x);
@@ -190,9 +196,8 @@ class MyRobot extends BCAbstractRobot {
                 end = dirChoices[this.getIndex(dirChoices[index])];
             else
                 end = [target.y, target.x];
-            
+
             this.log("prophet index" +index);
-            
             this.tmpStack = this.stack;
             var mov = Move.moveOffense(start, end, map, robotMap, this.tmpStack);
 
@@ -202,28 +207,23 @@ class MyRobot extends BCAbstractRobot {
             var nl = [mov[0]+start[1],mov[1]+start[0]];
             this.stack.push(nl);
             this.log("prophet stack" + this.stack);
-
-
-
             this.log("moving: " + mov);
             
             return this.move(...mov);
         }
-        
         //CASTLE
         else if (this.me.unit === SPECS.CASTLE) {
-        
+            var unitMaps = unitbuilding.buildUnitMap(this); // DONT DELETE... (... means more lines coming)
             var visible = this.getVisibleRobots();
             var map = this.getPassableMap();
             var target = 0;
 
             var i;
 
-            var unitMaps = unitbuilding.buildUnitMap(this);
 
-            if (unitMaps[2]>this.unitCountMap[2]){
-                this.unitCountMap[2]++;
-            }
+            if (unitMaps[2]>this.unitCountMap[2]){  // DON'T DELETE..
+                this.unitCountMap[2]++;  // DON'T DELETE...
+            } // DON'T DELETE...
             else if(unitMaps[3]>this.unitCountMap[3]){
                 this.unitCountMap[3]++;
             }
@@ -236,13 +236,25 @@ class MyRobot extends BCAbstractRobot {
             const choices = [[0,-1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
             const choice = choices[Math.floor(Math.random()*choices.length)]
 
-            if(this.unitCountMap[2]< 3){
+            if(this.unitCountMap[2]< 2){  // DON'T DELETE...
 
                 this.log("Building a pilgrim at " + (this.me.x+choice[0]) + ", " + (this.me.y+choice[1]));
                 return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
+            }  //... DON"T DELETE until here
+
+            
+            /*
+            else if(this.unitCountMap[3]< 2){
+
+                this.log("Building a crusader at " + (this.me.x+choice[0]) + ", " + (this.me.y+choice[1]));
+                return this.buildUnit(SPECS.CRUSADER, choice[0], choice[1]);
             }
-    
-            else if (this.unitCountMap[4] < 1 ){
+            */
+            else if (this.unitCountMap[5]<1){
+                this.log("Building a preacher at " + (this.me.x+choice[0]) + ", " + (this.me.y+choice[1]));
+                return this.buildUnit(SPECS.PREACHER, choice[0], choice[1]);
+            }
+            else if (this.unitCountMap[4]< 1 ){
                 
                 this.log("Building a prophet at " + (this.me.x+choice[0]) + ", " + (this.me.y+choice[1]));
                 return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
@@ -256,6 +268,7 @@ class MyRobot extends BCAbstractRobot {
             for(i in visible)
             {
                 this.castleTalk(visible[i].x);
+                //this.log("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$CASTLE TALK VALUE......." + visible[i].x);
                 if ((visible[i].castle_talk !== null) && (visible[i].castle_talk > 0))
                 {
                     //read out castle loc
@@ -298,9 +311,8 @@ class MyRobot extends BCAbstractRobot {
 
             this.castleTalk(this.me.x)
             this.log("pilgrim castle talk value: " + this.me.x);
-        
-            if (mining.checkIfResourcesFull(this,20,100))
-            {              //minor fix
+            //check if there is resource to dump
+            if (mining.checkIfResourcesFull(this,20,100)){ //minor fix
                 var targetDump = mining.returnTargetDump(this);
                 if(targetDump){
 
@@ -311,8 +323,8 @@ class MyRobot extends BCAbstractRobot {
                 }
             }
             //check if resource locations exist, if so mine
-            var karblocation = mining.findClosestResource(this.me,this.karbonite_map);
-            var fuellocation = mining.findClosestResource(this.me,this.fuel_map);
+            var karblocation = mining.findClosestResource(this,this.karbonite_map,this.map);
+            var fuellocation = mining.findClosestResource(this,this.fuel_map,this.map);
 
             if (fuellocation || karblocation){
 
@@ -321,40 +333,15 @@ class MyRobot extends BCAbstractRobot {
                     //this.log("-----------------------------I'm MINING------------------------------");
                     return this.mine();
                 }
-        }
-        /*
-        const choices = [[0,-1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
-        const choice = choices[Math.floor(Math.random()*choices.length)]
-        return this.move(...choice);
-        */
-        return pilgrimNavigation.pilgrimMove(this,fuellocation,karblocation);
-
-    }
-}
-
-    /* Returns the closest karbonite location from the current robot  */
-    retClosestKarbLocation(robot){
-        let destdistance = 6000000;
-        let destlocation = null;
-        var map = this.karbonite_map;
-        const maplength = map.length; 
-
-        for(let y = 0; y<maplength; y++){                    // all 2D grid array maps structured ass arr[y][x]
-            for (let x = 0; x<maplength; x++){
-                if (map[y][x]){
-                    
-                    var currentDistance = this.squareDistance({x,y},robot);
-
-                    if (currentDistance< destdistance)
-                    {
-                        destdistance = currentDistance;
-                        destlocation = {x,y};
-                    }
-                }
             }
+            /*
+            const choices = [[0,-1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
+            const choice = choices[Math.floor(Math.random()*choices.length)]
+            return this.move(...choice);
+            */
+            return pilgrimNavigation.pilgrimMove(this,fuellocation,karblocation);
         }
-        return destlocation;
-    }
+}
     retClosestFuelLocation(robot){
         let destdistance = 6000000;
         let destlocation = null;
@@ -377,7 +364,8 @@ class MyRobot extends BCAbstractRobot {
         return destlocation;
     }
 
-    squareDistance(destination, start){
+    squareDistance(destination, start)
+    {
 
         return Math.pow((destination.x - start.x),2) + Math.pow((destination.y - start.y),2);
     }
@@ -396,4 +384,5 @@ class MyRobot extends BCAbstractRobot {
         return index;
     }
 }
+
 var robot = new MyRobot();

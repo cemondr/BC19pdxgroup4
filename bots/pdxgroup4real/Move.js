@@ -1,9 +1,11 @@
+
 export class Move {
     
     static dist(destination, start){
         return Math.pow((destination[1] - start[1]),2) + Math.pow((destination[0] - start[0]),2);
     
     }
+
     static flip(loc)
     {
         loc[0] = loc[0]*(-1);
@@ -40,7 +42,8 @@ export class Move {
                 break;
             }
         }
-    /*
+
+/*
         var j;
         //for(j in tmpStack)
         while(tmpStack.length != 0)
@@ -49,7 +52,8 @@ export class Move {
             if(x != [])
                 stack.push(x);
         }
-    */
+
+*/
         if(flag === true)
             return true;
         else    
@@ -96,9 +100,10 @@ export class Move {
         {
         /*
         if(!this.inBounds(nextSpot, grid) || grid[nextSpot[0]][nextSpot[1]] === false 
-            || robotGrid[nextSpot[0]][nextSpot[1]] != 0 || this.isRecentMove(begin, nextSpot, stack))
-        {
-            */
+
+           || robotGrid[nextSpot[0]][nextSpot[1]] != 0 || this.isRecentMove(begin, nextSpot, stack))
+         {
+             */
             var j;
             for(j in dirChoices)
             {
@@ -117,9 +122,111 @@ export class Move {
         return [mov[1], mov[0]];
     }
 }
-//// //     dist : dist,
-// module.exports.flip = flip;
-// module.exports.inBounds = inBounds;
-// module.exports.isRecentMove = isRecentMove;
-// module.exports.moveOffense = moveOffense;
-// // }
+
+export default Move
+
+
+//TODO: put directions into array to shorten up code
+        /*
+        // s
+        if(map[current[0]+1][current[1]] === true && robotMap[current[0]+1][current[1]] === 0 )
+        {
+            var next = [current[0]+1, current[1]];
+            var d = this.dist(next, goal);
+            if(d < minDist && last !== next)
+            {
+                minDist = d;
+                mov = [1,0];
+            }
+        }
+
+        // sw
+        if(map[current[0]+1][current[1]-1] === true && robotMap[current[0]+1][current[1]-1] === 0  )
+        {
+            var next = [current[0]+1, current[1]-1];
+            var d = this.dist(next, goal);
+            if(d < minDist && last !== next)
+            {
+                minDist = d;
+                mov = [1,-1];
+            }
+        }
+
+        // w
+        if(map[current[0]][current[1]-1] === true && robotMap[current[0]][current[1]-1] === 0 )
+        {
+            var next =[current[0], current[1]-1];
+            var d = this.dist(next, goal);
+            if(d < minDist && last !== next)
+            {
+                minDist = d;
+                mov = [0,-1];
+            }
+         }
+
+         // nw 
+         if(map[current[0]-1][current[1]-1] === true && robotMap[current[0]-1][current[1]-1] === 0)
+        {
+            var next = [current[0]-1, current[1]-1];
+            var d = this.dist(next, goal);
+            if(d < minDist && last !== next)
+            {
+                minDist = d;
+                mov = [-1,-1];
+            }
+        }
+
+        // n
+        if(map[current[0]-1][current[1]] === true && robotMap[current[0]-1][current[1]] === 0 )
+        {
+            var next =[current[0]-1, current[1]];
+            var d = this.dist(next, goal);
+            if(d < minDist && last !== next)
+            {
+                minDist = d;
+                mov = [-1,0];
+            }
+        }
+
+        // ne
+        if(map[current[0]-1][current[1]+1] === true && robotMap[current[0]-1][current[1]+1] === 0)
+        {
+            var next = [current[0]-1, current[1]+1];
+            var d = this.dist(next, goal);
+            if(d < minDist && last !== next)
+            {
+                minDist = d;
+                mov = [-1,1];
+            }
+        }
+
+        //e
+        if(map[current[0]][current[1]+1] === true && robotMap[current[0]][current[1]+1] === 0)
+        {
+            var next = [current[0], current[1]+1];
+            var d = this.dist(next, goal);
+            if(d < minDist && last !== next)
+            {
+                minDist = d;
+                mov = [0,1];
+            }
+        }
+
+        //se
+        if(map[current[0]+1][current[1]+1] === true && robotMap[current[0]+1][current[1]+1] === 0)
+        {
+            var next = [current[0]+1, current[1]+1];
+            var d = this.dist(next, goal);
+            if(d < minDist && last !== next)
+            {
+                minDist = d;
+                mov = [1,1];
+            }
+        }
+
+        stack.push(last);
+        stack.push([mov[1], mov[0]]);
+        
+        return [mov[1], mov[0]];
+        */
+
