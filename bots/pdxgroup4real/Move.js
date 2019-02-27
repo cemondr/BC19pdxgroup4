@@ -1,12 +1,9 @@
-
 export class Move {
     
-    static dist(destination, start)
-    {
-
+    static dist(destination, start){
         return Math.pow((destination[1] - start[1]),2) + Math.pow((destination[0] - start[0]),2);
+    
     }
-
     static flip(loc)
     {
         loc[0] = loc[0]*(-1);
@@ -43,7 +40,7 @@ export class Move {
                 break;
             }
         }
-/*
+    /*
         var j;
         //for(j in tmpStack)
         while(tmpStack.length != 0)
@@ -52,7 +49,7 @@ export class Move {
             if(x != [])
                 stack.push(x);
         }
-*/
+    */
         if(flag === true)
             return true;
         else    
@@ -99,9 +96,9 @@ export class Move {
         {
         /*
         if(!this.inBounds(nextSpot, grid) || grid[nextSpot[0]][nextSpot[1]] === false 
-           || robotGrid[nextSpot[0]][nextSpot[1]] != 0 || this.isRecentMove(begin, nextSpot, stack))
-         {
-             */
+            || robotGrid[nextSpot[0]][nextSpot[1]] != 0 || this.isRecentMove(begin, nextSpot, stack))
+        {
+            */
             var j;
             for(j in dirChoices)
             {
@@ -120,7 +117,9 @@ export class Move {
         return [mov[1], mov[0]];
     }
 }
-
-//export default Move;
-
-
+//// //     dist : dist,
+// module.exports.flip = flip;
+// module.exports.inBounds = inBounds;
+// module.exports.isRecentMove = isRecentMove;
+// module.exports.moveOffense = moveOffense;
+// // }

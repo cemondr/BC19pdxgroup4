@@ -74,5 +74,3 @@ unitbuilding.countthepilgrims = (robot) =>{
 
     return pilgrimnum;
 }
-
-//export default unitbuilding;

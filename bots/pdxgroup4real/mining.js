@@ -1,5 +1,6 @@
 import {BCAbstractRobot, SPECS} from 'battlecode';
 
+
 export const mining = {};
 
 mining.findClosestResource = (robot, minemap) => {

@@ -1,5 +1,5 @@
 import {BCAbstractRobot, SPECS} from 'battlecode';
-import mining from './mining.js';
+//import mining from './mining.js';
 export const pilgrimNavigation ={};
 
 pilgrimNavigation.getDirection = (robot,goal) =>{
