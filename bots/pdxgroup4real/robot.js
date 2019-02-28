@@ -66,8 +66,8 @@ class MyRobot extends BCAbstractRobot {
                             
                             var maxy = Math.max(this.me.y, 10 - this.me.y);
                             // this.signal(message, maxx + maxy);
-                            this.log("range1: " + maxx + maxy);
-                            this.signal(message, maxx + maxy);
+                            //this.log("range1: " + (maxx + maxy);
+                            this.signal(message, parseInt(maxx) + parseInt(maxy));
                             this.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.!!!!!!!!!!!!!!!!!!!!!!!!!111........PREACHER IS signaling castle yloc :" + String((visible[i].x, visible[i].y)));
                             this.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!....Sent message to castle.....!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                             
@@ -156,11 +156,11 @@ class MyRobot extends BCAbstractRobot {
                             
                             var message = visible[i].y << 4 + visible[i].x;
                             this.log("message" + message);
-                            var maxx = Math.max(this.me.x, 20 - this.me.x);
-                            var maxy = Math.max(this.me.y, 20 - this.me.y);
-                            this.log("range: " + maxx + maxy);
+                            var maxx = Math.max(this.me.x, 10 - this.me.x);
+                            var maxy = Math.max(this.me.y, 10 - this.me.y);
+                            this.log("range: " + parseInt(maxx) + parseInt(maxy));
                             //this.log("range1: " + (63 - this.me.x) + (63 - this.me.y));
-                            this.signal(message, maxx);
+                            this.signal(message, parseInt(maxx) + parseInt(maxy));
 
                             this.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!11!!!.........PROPHET is signaling castle yloc :" + String((visible[i].x, visible[i].y)));
                             this.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!...Sent message to castle.....!!!!!!!!!!!!!!!!!!!!!!!!!!!111");
@@ -287,7 +287,7 @@ class MyRobot extends BCAbstractRobot {
             const choices = [[0,-1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
             const choice = choices[Math.floor(Math.random()*choices.length)]
 
-            if(this.unitCountMap[2]< 4){  // DON'T DELETE...
+            if(this.unitCountMap[2]< resourceCount){  // DON'T DELETE...
 
                 this.log("Building a pilgrim at " + (this.me.x+choice[0]) + ", " + (this.me.y+choice[1]));
                 return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
@@ -301,13 +301,13 @@ class MyRobot extends BCAbstractRobot {
                 return this.buildUnit(SPECS.CRUSADER, choice[0], choice[1]);
             }
             */
-            else if (this.unitCountMap[4]< 3 ){
+            else if (this.unitCountMap[4]< 2 ){
                 
                 this.log("Building a prophet at " + (this.me.x+choice[0]) + ", " + (this.me.y+choice[1]));
                 return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
 
             }
-            else if (this.unitCountMap[5]< 3){
+            else if (this.unitCountMap[5]< 2){
                 this.log("Building a preacher at " + (this.me.x+choice[0]) + ", " + (this.me.y+choice[1]));
                 return this.buildUnit(SPECS.PREACHER, choice[0], choice[1]);
             }
