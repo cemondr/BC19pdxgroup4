@@ -30,6 +30,33 @@ mining.findClosestResource = (robot, minemap, terrainmap) => {
     return destlocation;
 }
 
+mining.countResources = (robot,fuelmap,karbmap) => {
+
+    var total_count = 0;
+    var x;
+    var y;
+
+    for(y = 0; y < fuelmap.length; y++){
+        for(x = 0; x < fuelmap.length; x++){
+            if(fuelmap[y][x] && mining.squareDistance({x,y},robot.me) < 64 ){
+                total_count++;
+            }
+        }
+    }
+
+    for(y = 0; y < karbmap.length; y++){
+        for (x = 0; x < karbmap.length; x++){
+            if(karbmap[y][x] && mining.squareDistance({x,y},robot.me) < 64){
+                total_count++;
+            }
+        }
+    }
+
+    //robot.log("TOTAL RES: ---------" + total_count);
+
+    return total_count;
+}
+
 mining.checkIfOccupied = (goalx,goaly,robot) => {
 
     var visrobots = robot.getVisibleRobots();

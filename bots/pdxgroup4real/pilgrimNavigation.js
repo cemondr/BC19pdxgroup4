@@ -95,7 +95,7 @@ pilgrimNavigation.pilgrimMove = (robot,fueLocation,karbLocation) => {
         direction = pilgrimNavigation.getDirection(robot,destination);
     }
     else{
-        robot.log("NO DESTINATION CURRENTLY FOUND FOR PILGRIM");
+       // robot.log("NO DESTINATION CURRENTLY FOUND FOR PILGRIM");
     }
 
     if (direction){
@@ -119,8 +119,8 @@ pilgrimNavigation.pilgrimMove = (robot,fueLocation,karbLocation) => {
         
     }
     else{
-        robot.log("NO DIRECTION CURRENTLY FOUND FOR PILGRIM");
-        robot.log("MOVING RANDOMLY");
+       // robot.log("NO DIRECTION CURRENTLY FOUND FOR PILGRIM");
+       // robot.log("MOVING RANDOMLY");
 
         const choices = [[0,-1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
         const choice = choices[Math.floor(Math.random()*choices.length)]
@@ -139,7 +139,7 @@ pilgrimNavigation.dealWithImpassibleTerrain = (robot,dest) =>{
     var robotxminus = (robot.me.x)-1;
     var robotyminus = (robot.me.y)-1;
     var i;
-    var index = null;
+    var index = {};
 
     const choices = [[robotx,robotyminus],[robotxplus,robotyminus],[robotxplus,roboty],[robotxplus,robotyplus],
     [robotx,robotyplus],[robotxminus,robotyplus],[robotxminus,roboty],[robotxminus,robotyminus]];
@@ -154,25 +154,19 @@ pilgrimNavigation.dealWithImpassibleTerrain = (robot,dest) =>{
         //robot.log(" CHOICESZZZZZ " + x + "," + y + " i: " + i);
         if ((terrainMap[y][x]) === true && (mining.checkIfOccupied(x,y,robot)) === false){
 
-            //obot.log(" CHOICESZZZZZ " + x + "," + y + " i: " + i);
-
-
-            if (mining.squareDistance(dest,{x,y}) < dist){
+            if ((mining.squareDistance(dest,{x,y}) < dist) /*&& robot.pilgrimStack.includes({x,y} === false)*/){
                 dist = mining.squareDistance(dest,{x,y});
                 index = {x,y};
-
-
-              //  robot.log(" CHOICESZZZZZhalallolo" + index.x + "," + index.y);
 
 
             }
         }
     }
 
-   // robot.log("IMPASSABLE TERRAIN MOVE: " + index.x +"," + index.y);
 
     if (index != null){
-    
+
+        //robot.pilgrimStack.push(index);
         return robot.move(index.x-robotx,index.y-roboty);
     }
 }
