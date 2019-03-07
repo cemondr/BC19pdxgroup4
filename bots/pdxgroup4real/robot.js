@@ -9,10 +9,10 @@ import {pilgrimNavigation} from './pilgrimNavigation.js';
 var step = -1;
 var PROPHET_ATK_MIN = 16;
 var PROPHET_ATK_MAX = 64;
-
+//var enemyCastle = [];
 var index = 0;
 var flag = false;
-var enemyCastle = [];
+
 var pendingCastleLoc = null ;   //have to send over two turns, this is for when we have only sent half a castle loc...castle talk
 
 
@@ -24,6 +24,7 @@ class MyRobot extends BCAbstractRobot {
         this.unitCountMap = [0,0,0,0,0,0];  
         this.isPilgrimKarb = 1;             
         this.partialCastleLocReceived = {}
+        this.enemyCastle = []
         this.pilgrimStack = [{}];
 
     }
@@ -55,9 +56,11 @@ class MyRobot extends BCAbstractRobot {
                     if( dist <= 16)
 
                     {
-                        var cord = (visible[i].x, visible[i].y)
-                        if ((visible[i].unit == 0) && (enemyCastle.includes(cord) == false))
+                        var cord = [visible[i].x, visible[i].y]
+                        this.log("++++++++++++++++++++++ enemyCastle: " + this.enemyCastle);
+                        if ((visible[i].unit == 0) && (this.cord_in_list([cord], this.enemyCastle) == false))
                         {
+                            
                          // need to cram two numbers < 64 into 4 bit.
                          // in the form of 00yy00xx
                             var message = (Number(visible[i].y << 8) + Number(visible[i].x));
@@ -72,8 +75,8 @@ class MyRobot extends BCAbstractRobot {
                             this.signal(message, (Math.pow(Number(maxx),2) + Number(maxy)));
                             this.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.!!!!!!!!!!!!!!!!!!!!!!!!!111........PREACHER IS signaling castle yloc :" + String([visible[i].x, visible[i].y]));
                             this.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!....Sent message to castle.....!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                             this.enemyCastle.push(cord);
                             
-                            enemyCastle.push(cord)
                             if (this.pendingCastleLoc != null)
                             {
                                 
@@ -150,13 +153,20 @@ class MyRobot extends BCAbstractRobot {
                     if( dist <= PROPHET_ATK_MAX && dist >= PROPHET_ATK_MIN)
                     {
                         var cord = [visible[i].x, visible[i].y];
-                        this.log("cord: " + cord);
-                        this.log("enemy castle: " + enemyCastle);
-                        if ((visible[i].unit == 0) && (enemyCastle.includes(cord) == false))
+                        this.log("cord: " + (cord));
+                        this.log(typeof cord);
+                        this.log(typeof this.enemyCastle);
+                        this.log(Object.values(this.enemyCastle));
+                        //this.log("enemyCastle: " + this.cord_in_list([cord], this.enemyCastle));
+                        //this.log("enemy castle: " + (this.enemyCastle.includes([cord])));
+                        if ((visible[i].unit == 0) && (this.cord_in_list([cord],  (this.enemyCastle)) == false))
                         {
                          // need to cram two numbers < 64 into 4 bit.
                          // in the form of 00yy00xx
-                            
+                            //if (!(this.enemyCastle.includes([cord])))
+                            //this.enemyCastle.push([cord]);
+                           
+                            this.log("Is this new?$$$$$$$$$$$" + String([cord]) + ' ' + String(this.enemyCastle));
                             var message = (Number(visible[i].y << 8) + Number(visible[i].x) );
                             this.log("message: " + message);
                             var maxx = Math.max(this.me.x, 10 - this.me.x);
@@ -168,8 +178,9 @@ class MyRobot extends BCAbstractRobot {
 
                             this.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!11!!!.........PROPHET is signaling castle yloc :" + String([visible[i].x, visible[i].y]));
                             this.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!...Sent message to castle.....!!!!!!!!!!!!!!!!!!!!!!!!!!!111");
-                        
-                            enemyCastle.push(cord)
+                            //if (this.cord_in_list([cord], this.enemyCastle) == false)
+                             this.enemyCastle.push(cord);
+                            
                             if (this.pendingCastleLoc != null)
                             {
                                 this.castleTalk(this.pendingCastleLoc);
@@ -184,7 +195,8 @@ class MyRobot extends BCAbstractRobot {
                                 this.pendingCastleLoc = visible[i].y
                             }
                         }
-                    
+                        this.log("enemyCastle of 0th: " + this.enemyCastle[0]);
+                        this.log("enemy castle -----------" + this.enemyCastle);
                         this.log("Attacking: " + visible[i].id);
                         return this.attack(visible[i].x - this.me.x, visible[i].y - this.me.y);
                     }
@@ -246,10 +258,10 @@ class MyRobot extends BCAbstractRobot {
                         this.castleTalk(xloc);
                         this.log("castletalk: " + xloc);
                         
-                        if (enemyCastle.includes([xloc, yloc]) == false)
-                        {
-                            enemyCastle.push([xloc, yloc]);  
-                        } 
+                        // if (this.cord_in_list([xloc, yloc], this.enemyCastle) == false)
+                        // {
+                        //     this.enemyCastle.push([xloc, yloc]);  
+                        // } 
                     } 
                     else
                     {
@@ -390,6 +402,37 @@ class MyRobot extends BCAbstractRobot {
             index = 0;
         
         return index;
+    }
+    cord_in_list(e1, lst)
+    {
+        //var e;
+        this.log("e111111111: " + e1);
+        this.log("e1 length----" + e1.length);
+        this.log("lst-------: " + lst);
+        if (lst.length < 1)
+        {
+            this.log("----------hellollllllllllllll-------");
+            return false
+        }
+        this.log("length--------------------------------" + this.enemyCastle.length);
+        for (var i = 0; i < lst.length; i++)
+        {
+            //this.log("e ------------------------" + e);
+            this.log("lst[0][0]" + lst[0][0]);
+            this.log("e1[0][0]" + e1[0][0]);
+            this.log("lst[0][1]" +lst[0][1]);
+            this.log("e1[0][1]" + e1[0][1]);
+
+            if ((lst[i][0] === e1[0][0]) && (lst[i][1] === e1[0][1]))
+            {
+                // this.log("inside");
+                // this.log("e[0]" + e[0]);
+                // this.log("e1[0]" + e[0]);
+                return true
+            }
+
+        }
+        return false
     }
 }
 
