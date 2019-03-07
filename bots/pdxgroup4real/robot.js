@@ -57,7 +57,7 @@ class MyRobot extends BCAbstractRobot {
 
                     {
                         var cord = [visible[i].x, visible[i].y]
-                        this.log("++++++++++++++++++++++ enemyCastle: " + this.enemyCastle);
+                        //this.log("++++++++++++++++++++++ enemyCastle: " + this.enemyCastle);
                         if ((visible[i].unit == 0) && (this.cord_in_list([cord], this.enemyCastle) == false))
                         {
                             
@@ -153,19 +153,12 @@ class MyRobot extends BCAbstractRobot {
                     if( dist <= PROPHET_ATK_MAX && dist >= PROPHET_ATK_MIN)
                     {
                         var cord = [visible[i].x, visible[i].y];
-                        this.log("cord: " + (cord));
-                        this.log(typeof cord);
-                        this.log(typeof this.enemyCastle);
-                        this.log(Object.values(this.enemyCastle));
-                        //this.log("enemyCastle: " + this.cord_in_list([cord], this.enemyCastle));
-                        //this.log("enemy castle: " + (this.enemyCastle.includes([cord])));
+            
                         if ((visible[i].unit == 0) && (this.cord_in_list([cord],  (this.enemyCastle)) == false))
                         {
                          // need to cram two numbers < 64 into 4 bit.
                          // in the form of 00yy00xx
-                            //if (!(this.enemyCastle.includes([cord])))
-                            //this.enemyCastle.push([cord]);
-                           
+                            
                             this.log("Is this new?$$$$$$$$$$$" + String([cord]) + ' ' + String(this.enemyCastle));
                             var message = (Number(visible[i].y << 8) + Number(visible[i].x) );
                             this.log("message: " + message);
@@ -195,8 +188,7 @@ class MyRobot extends BCAbstractRobot {
                                 this.pendingCastleLoc = visible[i].y
                             }
                         }
-                        this.log("enemyCastle of 0th: " + this.enemyCastle[0]);
-                        this.log("enemy castle -----------" + this.enemyCastle);
+                        
                         this.log("Attacking: " + visible[i].id);
                         return this.attack(visible[i].x - this.me.x, visible[i].y - this.me.y);
                     }
@@ -405,29 +397,15 @@ class MyRobot extends BCAbstractRobot {
     }
     cord_in_list(e1, lst)
     {
-        //var e;
-        this.log("e111111111: " + e1);
-        this.log("e1 length----" + e1.length);
-        this.log("lst-------: " + lst);
         if (lst.length < 1)
         {
-            this.log("----------hellollllllllllllll-------");
             return false
         }
-        this.log("length--------------------------------" + this.enemyCastle.length);
         for (var i = 0; i < lst.length; i++)
         {
-            //this.log("e ------------------------" + e);
-            this.log("lst[0][0]" + lst[0][0]);
-            this.log("e1[0][0]" + e1[0][0]);
-            this.log("lst[0][1]" +lst[0][1]);
-            this.log("e1[0][1]" + e1[0][1]);
 
             if ((lst[i][0] === e1[0][0]) && (lst[i][1] === e1[0][1]))
             {
-                // this.log("inside");
-                // this.log("e[0]" + e[0]);
-                // this.log("e1[0]" + e[0]);
                 return true
             }
 
