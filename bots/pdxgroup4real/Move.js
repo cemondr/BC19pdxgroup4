@@ -1,11 +1,20 @@
 
-
-class Move {
+export class Move {
     
-    static dist(destination, start)
-    {
-
+    static dist(destination, start){
         return Math.pow((destination[1] - start[1]),2) + Math.pow((destination[0] - start[0]),2);
+    
+    }
+
+    static withInTarget(loc, goal)
+    {
+        //var radius = dist[loc, goal];
+        var radius = Math.pow((goal[1] - loc[1]),2) + Math.pow((goal[0] - loc[0]),2);
+        if(radius <= 9)
+            return true;
+        else
+            return false;
+        
     }
 
     static flip(loc)
@@ -44,6 +53,7 @@ class Move {
                 break;
             }
         }
+
 /*
         var j;
         //for(j in tmpStack)
@@ -53,6 +63,7 @@ class Move {
             if(x != [])
                 stack.push(x);
         }
+
 */
         if(flag === true)
             return true;
@@ -60,11 +71,26 @@ class Move {
             return false;
     }
 
-    static moveOffense(start, goal, grid, robotGrid, stack)
+    static moveOffense(start, goal, grid, robotGrid, stack,fuel, unitType)
     {
         // bug algorithm
+        // [1,0],[1,-1],[0,-1],[-1,-1],[-1,0],[-1,1],[0,1],[1,1]
         // const dirChoices = [[-1,0], [-1,-1], [0,-1], [1,-1], [1,0], [1,1], [0,1], [-1,1]];
-        const dirChoices = [[1,0],[1,-1],[0,-1],[-1,-1],[-1,0],[-1,1],[0,1],[1,1]];
+        var dirChoices;
+        if(fuel > 75 && unitType === 3) //crusader type is 3
+        {
+            dirChoices =  [
+                                [3,0],[0,-3],[-3,0],[0,3],
+                                [2,0],[2,-2],[0,-2],[-2,-2],[-2,0],[-2,2],[0,2],[2,2],
+                                [1,-2],[-1,-2],[-1,2],[1,2],
+                                [2,-1],[-2,-1],[-2,1],[2,1],
+                                [1,0],[1,-1],[0,-1],[-1,-1],[-1,0],[-1,1],[0,1],[1,1]
+                            ];
+        }
+        else
+        {
+            dirChoices = [[1,0],[1,-1],[0,-1],[-1,-1],[-1,0],[-1,1],[0,1],[1,1]];
+        }
         //const dirChoices = [[1,0],[1,1],[0,1],[-1,1],[-1,0],[-1,-1],[0,-1],[1,-1]];
 
         const begin = start;
@@ -100,6 +126,7 @@ class Move {
         {
         /*
         if(!this.inBounds(nextSpot, grid) || grid[nextSpot[0]][nextSpot[1]] === false 
+
            || robotGrid[nextSpot[0]][nextSpot[1]] != 0 || this.isRecentMove(begin, nextSpot, stack))
          {
              */
@@ -228,3 +255,4 @@ export default Move
         
         return [mov[1], mov[0]];
         */
+

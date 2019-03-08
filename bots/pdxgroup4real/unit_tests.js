@@ -37,6 +37,10 @@ describe('Move', () => {
 		expect(Move.moveOffense([0,0],[1,1], grid, map, stack)).to.equal([1,1]);
 	});
 
+	it('returns 8', () => {
+		expect(Move.withInTarget([4,4], [2,2])).to.equal(8);
+	});
+
 });
 
 describe('mining Tests', function() {

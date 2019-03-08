@@ -1,42 +1,61 @@
 
 import {BCAbstractRobot, SPECS} from 'battlecode';
-import mining from './mining.js'
-import unitbuilding from './unitbuilding.js'
-import pilgrimNavigation from './pilgrimNavigation.js'
-import Move from './Move.js';
+import {Move} from './Move.js';
+//const Move = import('Move');
+import {mining} from './mining.js'
+import {unitbuilding} from './unitbuilding.js'
+import {pilgrimNavigation} from './pilgrimNavigation.js';
 
 var step = -1;
-
-const moveChoices = [[0,1], [1,1], [1,0], [1,-1], [0,-1], [-1,-1], [-1,0], [-1,1]];
-
 var CRUSADER_ATK_MIN = 1;
-var CRUSADER_ATK_MAX = 16;
+var CRUSADER_ATK_MAX = 16
 var PROPHET_ATK_MIN = 16;
 var PROPHET_ATK_MAX = 64;
-
+const TRAIL = 30;
+const STRAT_LIMIT = 1;
 var index = 0;
 var flag = false;
+var enemyCastle = [];
+var pendingCastleLoc = null ;   //have to send over two turns, this is for when we have only sent half a castle loc...castle talk
 
 
 class MyRobot extends BCAbstractRobot {
     constructor(){
         super();
-        this.unitCountMap = [0,0,0,0,0,0];
-        this.isPilgrimKarb = 1;
+
         this.stack= [[0,0]];
+        this.unitCountMap = [0,0,0,0,0,0];  
+        this.isPilgrimKarb = 1;             
+        this.partialCastleLocReceived = {}
+        this.pilgrimStack = [{}];
+        this.dest = null;
+        this.flip = false;
     }
 
     turn() {
         step++;
+        var MAP = this.map;
 
         if (this.me.unit === SPECS.CRUSADER) {
+            
             var visible = this.getVisibleRobots();
             var map = this.getPassableMap();
             var target = 0;
+            var castle = 0;
+            var count = 0;
 
             var i;
             for(i in visible)
             {
+                if(this.me.team == visible[i].team )
+                {
+                    if(visible[i].unit === SPECS.CRUSADER)
+                    count++;
+
+                    if(visible[i].unit === SPECS.CASTLE)
+                        castle = visible[i];
+                }
+
                 if(this.me.team != visible[i].team && this.isVisible(visible[i]))
                 {
                    var dist = this.squareDistance(visible[i],this.me);
@@ -44,33 +63,246 @@ class MyRobot extends BCAbstractRobot {
                     // if target in range, attack
                     if( dist <= CRUSADER_ATK_MAX && dist >= CRUSADER_ATK_MIN)
                     {
+                    
                         this.log("Attacking: " + visible[i].id);
                         return this.attack(visible[i].x - this.me.x, visible[i].y - this.me.y);
                     }
-
+                    
                     // seen but not in att range
                     target = visible[i];
                 }
             }
 
+           // no visible enemies, move to opposite corner
+           var robotMap = this.getVisibleRobotMap();
+           var start = [this.me.y, this.me.x];
+           var end = [];
+
+           // defend
+           //if(map.length > STRAT_LIMIT && count < 2)
+           /*
+           if(map.length < STRAT_LIMIT )
+           {
+               this.log("DEFENDING!!!!!!");
+               var mov = [0,0];
+               if(castle !== 0 && this.squareDistance(castle, this.me) < 5)
+               {
+                   const choices = [[0,-1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
+                   const choice = choices[Math.floor(Math.random()*choices.length)]
+                   mov = choice;
+                   return this.move(...mov);
+               }
+
+               if(this.me.x % 2 != 0 || this.me.y % 2 != 0)
+               {
+                   const choices = [[0,-1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
+                   const choice = choices[Math.floor(Math.random()*choices.length)]
+                   mov = choice;
+                   return this.move(...mov);
+               }
+
+               return this.move(...mov)
+           }
+           */
+
+           this.log("RUSH!!!!!!!!!!!!!!");
+
+           if(this.dest === null)
+            {
+                var tmp = 0;
+                if(this.isHorizontal(map))
+                {
+                    tmp = Math.abs(map.length-1 - this.me.x);
+                    this.dest = [this.me.y, tmp];
+                }
+                else
+                {
+                    
+                    tmp = Math.abs(map.length-1 - this.me.y);
+                    this.dest = [tmp, this.me.x];
+                }
+            }
+            else if(Move.withInTarget(start, this.dest) === true)
+            {
+                this.flip = true;
+                var tmp = 0;
+                if(this.isHorizontal(map))
+                {
+                    tmp = Math.abs(map.length-1 - this.me.y);
+                    this.dest = [tmp, this.me.x];
+                }
+                else
+                {
+                    tmp = Math.abs(map.length-1 - this.me.x);
+                    this.dest = [this.me.y, tmp];   
+                    
+                }
+            }
+           
+           if(target === 0)
+               end = this.dest;
+           else
+               end = [target.y, target.x];
+           
+           this.tmpStack = this.stack;
+           var mov = Move.moveOffense(start, end, map, robotMap, this.tmpStack,this.fuel,SPECS.CRUSADER);
+           if(this.stack.length > TRAIL)
+               this.stack.shift();
+
+           var nl = [mov[0]+start[1],mov[1]+start[0]];
+           this.stack.push(nl);
+           this.log(this.stack);
+
+
+
+           this.log("moving: " + mov);
+           
+           return this.move(...mov);
+        }
+        else if (this.me.unit === SPECS.PREACHER) {
+            var visible = this.getVisibleRobots();
+            var map = this.getPassableMap();
+            var target = 0;
+            var castle = 0;
+
+            //this.log("my target destination is " + this.dest);
+            var i;
+            
+            for(i in visible)
+            {
+                /*
+                this.castleTalk(visible[i].x);
+                if (visible[i].signal != -1)   //If robot doesn't sent any signal
+                {
+                    //read out castle loc
+                    var loc = [(visible[i].signal % 2**4, Math.floor(visible[i].signal >> 4))];  // 2**4 because we are reading 4 bits of x and y coorinates.
+                    this.log("PREACHER signal received : " + String(loc));
+                }
+                */
+                if(this.me.team == visible[i].team && visible[i].unit === SPECS.CASTLE)
+                {
+                    castle = visible[i];
+                }
+                
+                if(this.me.team != visible[i].team && this.isVisible(visible[i]))
+                {
+                   var dist = this.squareDistance(visible[i],this.me);
+                   
+                    // if target in range, attack
+                    if( dist <= 16)
+
+                    {
+                        /*
+                        var cord = (visible[i].x, visible[i].y)
+                        if ((visible[i].unit == 0) && (enemyCastle.includes(cord) == false))
+                        {
+                         // need to cram two numbers < 64 into 4 bit.
+                         // in the form of 00yy00xx
+                            var message = visible[i].y << 4 + visible[i].x;
+                            this.log("message: " + message)
+                            var maxx = Math.max(this.me.x, 10 - this.me.x);
+                            
+                            var maxy = Math.max(this.me.y, 10 - this.me.y);
+                            // this.signal(message, maxx + maxy);
+                            //this.log("range1: " + (maxx + maxy);
+                            this.signal(message, parseInt(maxx) + parseInt(maxy));
+                            this.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.!!!!!!!!!!!!!!!!!!!!!!!!!111........PREACHER IS signaling castle yloc :" + String((visible[i].x, visible[i].y)));
+                            this.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!....Sent message to castle.....!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                            
+                            enemyCastle.push(cord)
+                            if (this.pendingCastleLoc != null)
+                            {
+                                
+                                this.log("*****************************************************************signaling castle Talk yloc :" + String(this.pendingCastleLoc));
+                                this.castleTalk(this.pendingCastleLoc);
+                                this.pendingCastleLoc = null;
+                            }
+                            this.log("*****************************************************************signaling castle Talk xloc :" + String((visible[i].x, visible[i].y)));
+                            this.castleTalk(visible[i].x);
+                            this.pendingCastleLoc = visible[i].y
+                        }
+                        */
+                        this.log("Attacking: " + visible[i].id);
+                        return this.attack(visible[i].x - this.me.x, visible[i].y - this.me.y);
+                    }
+                    // seen but not in att range
+                    target = visible[i];
+                }
+            }
+
+            // defend
+            /*
+            this.log("map size: " + map.length);
+            if(map.length > STRAT_LIMIT)
+            {
+                this.log("DEFENDING!!!!!!");
+                var mov = [0,0];
+                if(castle !== 0 && this.squareDistance(castle, this.me) < 5)
+                {
+                    const choices = [[0,-1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
+                    const choice = choices[Math.floor(Math.random()*choices.length)]
+                    mov = choice;
+                    return this.move(...mov);
+                }
+
+                if(this.me.x % 2 != 0 || this.me.y % 2 != 0)
+                {
+                    const choices = [[0,-1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
+                    const choice = choices[Math.floor(Math.random()*choices.length)]
+                    mov = choice;
+                    return this.move(...mov);
+                }
+
+                return this.move(...mov)
+            }
+            */
+            this.log("RUSH!!!!!!!!!!!!!!");
+            // rush
             // no visible enemies, move to opposite corner
             var robotMap = this.getVisibleRobotMap();
-            //var dirChoices = [[4,4],[4,map.length-5],[map.length-5,4],[map.length-4,map.length-4]];
-            var dirChoices = [[7,7],[7,map.length-8],[map.length-8,map.length-8],[map.length-8,7]];
             var start = [this.me.y, this.me.x];
             var end = [];
+
+            if(this.dest === null)
+            {
+                var tmp = 0;
+                if(this.isHorizontal(map))
+                {
+                    tmp = Math.abs(map.length-1 - this.me.x);
+                    this.dest = [this.me.y, tmp];
+                }
+                else
+                {
+                    
+                    tmp = Math.abs(map.length-1 - this.me.y);
+                    this.dest = [tmp, this.me.x];
+                }
+            }
+            else if(Move.withInTarget(start, this.dest) === true)
+            {
+                this.flip = true;
+                var tmp = 0;
+                if(this.isHorizontal(map))
+                {
+                    tmp = Math.abs(map.length-1 - this.me.y);
+                    this.dest = [tmp, this.me.x];
+                }
+                else
+                {
+                    tmp = Math.abs(map.length-1 - this.me.x);
+                    this.dest = [this.me.y, tmp];   
+                    
+                }
+            }
             
             if(target === 0)
-                end = dirChoices[this.getIndex(dirChoices[index])];
+                end = this.dest;
             else
                 end = [target.y, target.x];
             
-            this.log(index);
-            
             this.tmpStack = this.stack;
-            var mov = Move.moveOffense(start, end, map, robotMap, this.tmpStack);
-
-            if(this.stack.length > 10)
+            var mov = Move.moveOffense(start, end, map, robotMap, this.tmpStack,this.fuel,SPECS.PREACHER);
+            if(this.stack.length > TRAIL)
                 this.stack.shift();
 
             var nl = [mov[0]+start[1],mov[1]+start[0]];
@@ -82,9 +314,11 @@ class MyRobot extends BCAbstractRobot {
             this.log("moving: " + mov);
             
             return this.move(...mov);
+
         }
 
-        if (this.me.unit === SPECS.PROPHET) {
+        else if (this.me.unit === SPECS.PROPHET) {
+
             var visible = this.getVisibleRobots();
             var map = this.getPassableMap();
             var target = 0;
@@ -92,6 +326,16 @@ class MyRobot extends BCAbstractRobot {
             var i;
             for(i in visible)
             {
+                /*
+                this.castleTalk(visible[i].x);
+                if (visible[i].signal != -1)
+                {
+                    //read out castle loc
+                    var loc = [(visible[i].signal % 2**4, visible[i].signal >> 4)];  // 2**4 brcause we are reading 4 bits of x and y coorinates.
+                    this.log("Prophet signal received : " + String(loc));
+
+                }
+*/
                 if(this.me.team != visible[i].team && this.isVisible(visible[i]))
                 {
                    var dist = this.squareDistance(visible[i],this.me);
@@ -99,188 +343,212 @@ class MyRobot extends BCAbstractRobot {
                     // if target in range, attack
                     if( dist <= PROPHET_ATK_MAX && dist >= PROPHET_ATK_MIN)
                     {
+                        /*
+                        var cord = (visible[i].x, visible[i].y);
+                        //this.log("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ enemyCastle ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" + enemyCastle);
+                        if ((visible[i].unit == 0) && (enemyCastle.includes(cord) == false))
+                        {
+                         // need to cram two numbers < 64 into 4 bit.
+                         // in the form of 00yy00xx
+                            
+                            var message = visible[i].y << 4 + visible[i].x;
+                            this.log("message" + message);
+                            var maxx = Math.max(this.me.x, 10 - this.me.x);
+                            var maxy = Math.max(this.me.y, 10 - this.me.y);
+                            this.log("range: " + parseInt(maxx) + parseInt(maxy));
+                            //this.log("range1: " + (63 - this.me.x) + (63 - this.me.y));
+                            this.signal(message, parseInt(maxx) + parseInt(maxy));
+
+                            this.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!11!!!.........PROPHET is signaling castle yloc :" + String((visible[i].x, visible[i].y)));
+                            this.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!...Sent message to castle.....!!!!!!!!!!!!!!!!!!!!!!!!!!!111");
+
+                            //this.castleTalk(visible[i].y);
+                        
+                            enemyCastle.push(cord)
+                            if (this.pendingCastleLoc != null)
+                            {
+                                
+                               // this.log("************************************************************signaling castle Talk yloc :" + String(this.pendingCastleLoc));
+                                this.castleTalk(this.pendingCastleLoc);
+                                //this.log("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$CASTLE TALK VALUE......." + this.pendingCastleLoc);
+                                this.pendingCastleLoc = null;
+                            }
+                            else
+                            {
+
+                                //this.log("*****************************************************signaling castle Talk xloc :" + String((visible[i].x, visible[i].y)));
+                                this.castleTalk(visible[i].x);
+                                this.pendingCastleLoc = visible[i].y
+                            }
+                        }
+                        */
+                    
                         this.log("Attacking: " + visible[i].id);
                         return this.attack(visible[i].x - this.me.x, visible[i].y - this.me.y);
                     }
-
+                    
                     // seen but not in att range
                     target = visible[i];
                 }
             }
 
-            // no visible enemies, move to opposite corner
-            var robotMap = this.getVisibleRobotMap();
-            //var dirChoices = [[4,4],[4,map.length-5],[map.length-5,4],[map.length-4,map.length-4]];
-            var dirChoices = [[5,5],[5,map.length-6],[map.length-6,map.length-6],[map.length-6,5]];
-            var start = [this.me.y, this.me.x];
-            var end = [];
-            
-            if(target === 0)
-                end = dirChoices[this.getIndex(dirChoices[index])];
-            else
-                end = [target.y, target.x];
-            
-            this.log(index);
-            
-            this.tmpStack = this.stack;
-            var mov = Move.moveOffense(start, end, map, robotMap, this.tmpStack);
+           // no visible enemies, move to opposite corner
+           var robotMap = this.getVisibleRobotMap();
+           var start = [this.me.y, this.me.x];
+           var end = [];
 
-            if(this.stack.length > 10)
-                this.stack.shift();
+           if(this.dest === null)
+            {
+                var tmp = 0;
+                if(this.isHorizontal(map))
+                {
+                    tmp = Math.abs(map.length-1 - this.me.x);
+                    this.dest = [this.me.y, tmp];
+                }
+                else
+                {
+                    
+                    tmp = Math.abs(map.length-1 - this.me.y);
+                    this.dest = [tmp, this.me.x];
+                }
+            }
+            else if(Move.withInTarget(start, this.dest) === true)
+            {
+                this.flip = true;
+                var tmp = 0;
+                if(this.isHorizontal(map))
+                {
+                    tmp = Math.abs(map.length-1 - this.me.y);
+                    this.dest = [tmp, this.me.x];
+                }
+                else
+                {
+                    tmp = Math.abs(map.length-1 - this.me.x);
+                    this.dest = [this.me.y, tmp];   
+                    
+                }
+            }
+           
+           if(target === 0)
+               end = this.dest;
+           else
+               end = [target.y, target.x];
+           
+           this.tmpStack = this.stack;
+           var mov = Move.moveOffense(start, end, map, robotMap, this.tmpStack,this.fuel,SPECS.PROPHET);
+           if(this.stack.length > TRAIL)
+               this.stack.shift();
 
-            var nl = [mov[0]+start[1],mov[1]+start[0]];
-            this.stack.push(nl);
-            this.log(this.stack);
+           var nl = [mov[0]+start[1],mov[1]+start[0]];
+           this.stack.push(nl);
+           this.log(this.stack);
 
-            this.log("moving: " + mov);
-            
-            return this.move(...mov);
+
+
+           this.log("moving: " + mov);
+           
+           return this.move(...mov);
         }
-
-        if (this.me.unit === SPECS.PREACHER) {
+        //CASTLE
+        else if (this.me.unit === SPECS.CASTLE) {
+            var unitMaps = unitbuilding.buildUnitMap(this); // DONT DELETE... (... means more lines coming)
             var visible = this.getVisibleRobots();
             var map = this.getPassableMap();
             var target = 0;
 
-            var i;
-            for(i in visible)
+            var resourceCount = mining.countResources(this,this.fuel_map,this.karbonite_map);
+             for(i in visible)
             {
+                /*
+                //this.castleTalk(visible[i].x);
+                //this.log("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$CASTLE TALK VALUE......." + visible[i].x);
+                if ((visible[i].castle_talk !== null) && (visible[i].castle_talk > 0))
+                {
+                    //read out castle loc
+                    var coord = visible[i].castle_talk;
+                    var dict_str = '';
+                    if (visible[i].id in this.partialCastleLocReceived)
+                    {
+                        // must be y cord, now have full loc
+
+                        var xloc = this.partialCastleLocReceived[visible[i].id];
+                        var yloc = coord;
+                        this.log("**********************************************Inside-Castle: castleTalk signal received : " + String(xloc, yloc));
+                        this.castleTalk(xloc);
+                        
+                        if (enemyCastle.includes((xloc, yloc)) == false)
+                        {
+                            enemyCastle.push(xloc, yloc);  
+                        } 
+                    } 
+                    else
+                    {
+                        this.partialCastleLocReceived[visible[i].id] = coord;         //new castle xloc, save until know yloc  
+                    }
+                }
+                */
                 if(this.me.team != visible[i].team && this.isVisible(visible[i]))
                 {
                    var dist = this.squareDistance(visible[i],this.me);
                     
                     // if target in range, attack
-                    if( dist <= 16)
+                    if( dist <= 64)
                     {
-                        this.log("Attacking: " + visible[i].id);
+                        this.log("Castle Attacking: " + visible[i].id);
                         return this.attack(visible[i].x - this.me.x, visible[i].y - this.me.y);
                     }
-
                     target = visible[i];
                 }
-            }
-        
-            var robotMap = this.getVisibleRobotMap();
-            this.log("preacher : " + map.length)
-            var dirChoices = [[9,9],[9,map.length-8],[map.length-8,map.length-9],[map.length-9,8]];
-            var start = [this.me.y, this.me.x];
-            var end = [];
-            
-            if(target === 0)
-                end = dirChoices[this.getIndex(dirChoices[index])];
-            else
-                end = [target.y, target.x];
-            
-            this.log("preacher index" + index);
-            
-            this.tmpStack = this.stack;
-            var mov = Move.moveOffense(start, end, map, robotMap, this.tmpStack);
-
-            if(this.stack.length > 10)
-                this.stack.shift();
-
-            var nl = [mov[0]+start[1],mov[1]+start[0]];
-            this.stack.push(nl);
-            this.log(this.stack);
-            this.log("moving: " + mov);
-            
-            return this.move(...mov);
-        }
-
-
-        //CASTLE
-        else if (this.me.unit === SPECS.CASTLE) {
-            // build preacher and prohpet first
-            // keep trying to build for the first 10 turns
-
-            /*
-            if(this.karbonite > 70 && this.me.turn % 10 === 0)
-            {
-                const choices = [[0,-1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
-                const choice = choices[Math.floor(Math.random()*choices.length)]
-                
-                this.log("Building a preacher at " + (this.me.x+choice[0]) + ", " + (this.me.y+choice[1]));
-                return this.buildUnit(SPECS.PREACHER, choice[0], choice[1]);
-            }
-
-            else if(this.karbonite > 30 && this.me.turn % 5 === 0)
-            {
-                const choices = [[0,-1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
-                const choice = choices[Math.floor(Math.random()*choices.length)]
-                
-                this.log("Building a prophet at " + (this.me.x+choice[0]) + ", " + (this.me.y+choice[1]));
-                return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
-            }
-            */
-            // keep flows of crusaders after 10 turns
-            /*
-            if (this.karbonite >= 15 && this.me.turn % 25 === 0) {    
-                const choices = [[0,-1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
-                const choice = choices[Math.floor(Math.random()*choices.length)]
-
-                this.log("Building a crusader at " + (this.me.x+choice[0]) + ", " + (this.me.y+choice[1]));
-                return this.buildUnit(SPECS.CRUSADER, choice[0], choice[1]);
-            }
-            */
-           /*
-            else if (this.karbonite >= 15 && this.me.turn % 25 === 0 ){
-
-                const choices = [[0,-1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
-                const choice = choices[Math.floor(Math.random()*choices.length)]
-
-                this.log("Building a pilgrim at " + (this.me.x+choice[0]) + ", " + (this.me.y+choice[1]));
-                return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
-                
             } 
-            */
-           var unitMaps = unitbuilding.buildUnitMap(this);
 
-            //this.log("PILGRIM: "+ unitMaps[2])
-
-            if (unitMaps[2]>this.unitCountMap[2]){
-                this.unitCountMap[2]++;
-            }
-            else if(unitMaps[3]>this.unitCountMap[3]){
-                this.unitCountMap[3]++;
-            }
+            if (unitMaps[2]>this.unitCountMap[2]){  // DON'T DELETE..
+                this.unitCountMap[2]++;  // DON'T DELETE...
+            } // DON'T DELETE...
+            // else if(unitMaps[3]>this.unitCountMap[3]){
+            //     this.unitCountMap[3]++;
+            // }
             else if(unitMaps[4]> this.unitCountMap[4]){
                 this.unitCountMap[4]++;
             }
             else if(unitMaps[5]> this.unitCountMap[5]){
                 this.unitCountMap[5]++;
             }
+            
             const choices = [[0,-1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
             const choice = choices[Math.floor(Math.random()*choices.length)]
 
-            if(this.unitCountMap[2]< 2){
+            if(this.unitCountMap[2]< resourceCount){  // DON'T DELETE...
 
                 this.log("Building a pilgrim at " + (this.me.x+choice[0]) + ", " + (this.me.y+choice[1]));
                 return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
-            }
-            /*
-            else if(this.unitCountMap[3]< 2){
-
+            }  //... DON"T DELETE until here
+             //
+             
+            else
+            {
                 this.log("Building a crusader at " + (this.me.x+choice[0]) + ", " + (this.me.y+choice[1]));
                 return this.buildUnit(SPECS.CRUSADER, choice[0], choice[1]);
             }
-            */
-            else if (this.unitCountMap[5]<1){
-                this.log("Building a preacher at " + (this.me.x+choice[0]) + ", " + (this.me.y+choice[1]));
-                return this.buildUnit(SPECS.PREACHER, choice[0], choice[1]);
-            }
-            else if (this.unitCountMap[4]< 1 ){
+            
+            /*
+            // small map, rush!!!
+            else if (this.unitCountMap[4]< 2){
                 
                 this.log("Building a prophet at " + (this.me.x+choice[0]) + ", " + (this.me.y+choice[1]));
                 return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
 
             }
-            else {
-                return // this.log("Castle health: " + this.me.health);
+            else if (this.unitCountMap[5]< 2){
+                this.log("Building a preacher at " + (this.me.x+choice[0]) + ", " + (this.me.y+choice[1]));
+                return this.buildUnit(SPECS.PREACHER, choice[0], choice[1]);
             }
+            */
         }
-
         
         else if (this.me.unit === SPECS.PILGRIM){
+
+            this.castleTalk(this.me.x)
+            //this.log("pilgrim castle talk value: " + this.me.x);
 
             //check if there is resource to dump
             if (mining.checkIfResourcesFull(this,20,100)){ //minor fix
@@ -294,8 +562,8 @@ class MyRobot extends BCAbstractRobot {
                 }
             }
             //check if resource locations exist, if so mine
-            var karblocation = mining.findClosestResource(this.me,this.karbonite_map);
-            var fuellocation = mining.findClosestResource(this.me,this.fuel_map);
+            var karblocation = mining.findClosestResource(this,this.karbonite_map,this.map);
+            var fuellocation = mining.findClosestResource(this,this.fuel_map,this.map);
 
             if (fuellocation || karblocation){
 
@@ -305,16 +573,34 @@ class MyRobot extends BCAbstractRobot {
                     return this.mine();
                 }
             }
-            /*
-            const choices = [[0,-1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
-            const choice = choices[Math.floor(Math.random()*choices.length)]
-            return this.move(...choice);
-            */
+           
             return pilgrimNavigation.pilgrimMove(this,fuellocation,karblocation);
         }
+}
+    retClosestFuelLocation(robot){
+        let destdistance = 6000000;
+        let destlocation = null;
+        var map = this.fuel_map;
+        const maplength = map.length;
+
+        for (let y = 0; y <maplength; y++){
+            for (let x = 0; x < maplength; x++){
+                if(map[y][x]){
+                    var currentDistance = this.squareDistance({x,y},robot);
+
+                    if(currentDistance < destdistance){
+                        destdistance = currentDistance;
+                        destlocation = {x,y};
+                    }
+                }
+            }
+        }
+
+        return destlocation;
     }
 
-    squareDistance(destination, start){
+    squareDistance(destination, start)
+    {
 
         return Math.pow((destination.x - start.x),2) + Math.pow((destination.y - start.y),2);
     }
@@ -324,13 +610,26 @@ class MyRobot extends BCAbstractRobot {
         var loc = [this.me.y, this.me.x];
         var d = Move.dist(loc, goal);
 
-        if(d < 9)
+        if(d < 9)        // checks to see if the bot is with in 9 square blocks of the goal location 
             index++;
 
-        if(index > 3)
+        if(index > 3)   //checks to see if the bot has made it to each corner and if it does, repeat
             index = 0;
         
         return index;
+    }
+
+    isHorizontal(map)
+    {
+        var i = 0;
+        var len = map.length;
+        for(i = 0; i < len; i++)
+        {
+            if(map[i][10] !== map[i][len-11])
+                return false;
+        }
+
+        return true;
     }
 }
 
