@@ -1,6 +1,6 @@
 import {BCAbstractRobot, SPECS} from 'battlecode';
 
-const unitbuilding = {};
+export const unitbuilding = {};
 var pilgrim_count = 0;
 
 unitbuilding.checkPilgrimCount = () =>{
@@ -73,6 +73,6 @@ unitbuilding.countthepilgrims = (robot) =>{
     }
 
     return pilgrimnum;
+
 }
 
-export default unitbuilding;
