@@ -43,6 +43,7 @@ class MyRobot extends BCAbstractRobot {
             var count = 0;
 
             var i;
+            
             for(i in visible)
             {
                 if(this.me.team == visible[i].team )
@@ -57,9 +58,10 @@ class MyRobot extends BCAbstractRobot {
                 if(this.me.team != visible[i].team && this.isVisible(visible[i]))
                 {
                    var dist = this.squareDistance(visible[i],this.me);
-                    
+                   
                     // if target in range, attack
-                    if( dist <= CRUSADER_ATK_MAX && dist >= CRUSADER_ATK_MIN)
+                    if( dist <= 16)
+
                     {
                     
                         this.log("Attacking: " + visible[i].id);
@@ -185,6 +187,42 @@ class MyRobot extends BCAbstractRobot {
                     // if target in range, attack
                     if( dist <= 16)
                     {
+                        var cord = [visible[i].x, visible[i].y];
+                        this.log("cord: " + cord);
+                        this.log("enemy castle: " + enemyCastle);
+                        if ((visible[i].unit == 0) && (enemyCastle.includes(cord) == false))
+                        {
+                         // need to cram two numbers < 64 into 4 bit.
+                         // in the form of 00yy00xx
+                            
+                            var message = (Number(visible[i].y << 8) + Number(visible[i].x) );
+                            this.log("message: " + message);
+                            var maxx = Math.max(this.me.x, 10 - this.me.x);
+                            var maxy = Math.max(this.me.y, 10 - this.me.y);
+                            this.log("prophet maxy: " + maxy);
+                            this.log("prophet maxx: " + maxx);
+                            this.log("prophet total range: " + (Number(Math.pow(Number(maxx),2)) + Number(maxy)));
+                            this.signal(message, (Number(Math.pow(Number(maxx),2)) + Number(maxy)));
+
+                            this.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!11!!!.........PROPHET is signaling castle yloc :" + String([visible[i].x, visible[i].y]));
+                            this.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!...Sent message to castle.....!!!!!!!!!!!!!!!!!!!!!!!!!!!111");
+                        
+                            enemyCastle.push(cord)
+                            if (this.pendingCastleLoc != null)
+                            {
+                                this.castleTalk(this.pendingCastleLoc);
+
+                                this.log("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$CASTLE TALK VALUE......." + this.pendingCastleLoc);
+                                this.pendingCastleLoc = null;
+                            }
+                            else
+                            {
+
+                                this.castleTalk(visible[i].x);
+                                this.pendingCastleLoc = visible[i].y
+                            }
+                        }
+                    
                         this.log("Attacking: " + visible[i].id);
                         return this.attack(visible[i].x - this.me.x, visible[i].y - this.me.y);
                     }
@@ -286,8 +324,9 @@ class MyRobot extends BCAbstractRobot {
             var target = 0;
             var castle = 0;
 
-            var i;
-            for(i in visible)
+            var resourceCount = mining.countResources(this,this.fuel_map,this.karbonite_map);
+
+             for(i in visible)
             {
                 if(this.me.team == visible[i].team && visible[i].unit === SPECS.CASTLE)
                 {
@@ -448,7 +487,6 @@ class MyRobot extends BCAbstractRobot {
 
             this.castleTalk(this.me.x)
             //this.log("pilgrim castle talk value: " + this.me.x);
-
             //check if there is resource to dump
             if (mining.checkIfResourcesFull(this,20,100)){ //minor fix
                 var targetDump = mining.returnTargetDump(this);

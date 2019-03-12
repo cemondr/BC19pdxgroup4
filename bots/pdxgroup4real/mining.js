@@ -2,34 +2,6 @@ import {BCAbstractRobot, SPECS} from 'battlecode';
 
 export const mining = {};
 
-mining.findClosestCluster = (robot, minemap, terrainmap) => {
-    let destdistance = 6000000;
-    let destlocation = null;
-    var map = minemap;
-    var terrainmap = robot.getPassableMap();
-    let locations = [{}];
-    var i = 0;
-    const maplength = map.length;
-    for (let y = 0; y <maplength; y++){
-        for (let x = 0; x < maplength; x++){
-            if(map[y][x] && terrainmap[y][x]){
-                var currentDistance = mining.squareDistance({x,y},robot.me);
-                if(currentDistance < destdistance && currentDistance > 32){
-
-                    destdistance = currentDistance;    
-                    destlocation = {x,y};                
-                }
-                
-            }
-        }
-    }
-
-    //robot.log("Robot ID: " + robot.me.id + " INSIDEEEEEEE GOALLLLL + " + destlocation.x + ","+ destlocation.y);
-
-    return destlocation;
-
-}
-
 mining.findClosestResource = (robot, minemap, terrainmap) => {
 
     let destdistance = 6000000;
