@@ -106,7 +106,9 @@ mining.returnTargetDump = (robot) =>{
 
         if(robot.isVisible(visibleRobots[i])){
 
-            if (visibleRobots[i].team === robot.me.team && visibleRobots[i].unit === SPECS.CASTLE){
+            //if (visibleRobots[i].team === robot.me.team && visibleRobots[i].unit === SPECS.CASTLE){
+            if (visibleRobots[i].team === robot.me.team 
+                && (visibleRobots[i].unit === SPECS.CASTLE || visibleRobots[i].unit === 1)){
 
                 dumpDistance = mining.squareDistance(visibleRobots[i],robot.me);
 
